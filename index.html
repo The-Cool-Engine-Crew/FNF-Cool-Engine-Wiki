@@ -1,0 +1,3317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cool Engine — Developer Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a40;
+    --accent: #ff3c78;
+    --accent2: #3cffd8;
+    --accent3: #ffd23c;
+    --text: #e8e8f0;
+    --text-dim: #7878a0;
+    --text-code: #a8f0c8;
+    --glow: rgba(255,60,120,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Grid noise background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,60,120,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,60,120,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-title {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px var(--accent);
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .version-badge {
+    display: inline-block;
+    margin-top: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+
+  .nav-section {
+    padding: 20px 0;
+  }
+
+  .nav-heading {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding: 0 24px 8px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 8px 24px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--accent2);
+    border-left-color: var(--accent2);
+    background: rgba(60,255,216,0.04);
+    padding-left: 28px;
+  }
+
+  .nav-item.highlight:hover, .nav-item.highlight.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(255,60,120,0.04);
+  }
+
+  /* ── Main content ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a0a14 50%, #0a0f1a 100%);
+    padding: 64px 64px 52px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: 'COOL ENGINE';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'VT323', monospace;
+    font-size: 140px;
+    color: rgba(255,60,120,0.04);
+    letter-spacing: 10px;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meta-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    color: var(--accent2);
+    letter-spacing: 1px;
+  }
+
+  /* ── Content sections ── */
+  .content { padding: 0 64px 80px; }
+
+  .section {
+    margin-top: 56px;
+    scroll-margin-top: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+    width: 36px;
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .section-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.2s;
+    transform-origin: left;
+  }
+
+  .card:hover { border-color: rgba(255,60,120,0.4); transform: translateY(-2px); }
+  .card:hover::before { transform: scaleX(1); }
+
+  .card.teal::before { background: var(--accent2); }
+  .card.teal:hover { border-color: rgba(60,255,216,0.4); }
+
+  .card.yellow::before { background: var(--accent3); }
+  .card.yellow:hover { border-color: rgba(255,210,60,0.4); }
+
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .card-body {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: #080810;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 16px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text-code);
+    overflow-x: auto;
+    margin: 12px 0;
+    line-height: 1.8;
+    white-space: pre;
+  }
+
+  .code-block.teal { border-left-color: var(--accent2); }
+  .code-block.yellow { border-left-color: var(--accent3); color: #ffe88a; }
+
+  /* ── Info blocks ── */
+  .info-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 0 4px 4px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .info-block.warn { border-left-color: var(--accent3); }
+  .info-block.danger { border-left-color: var(--accent); }
+
+  .info-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .info-label.teal { color: var(--accent2); }
+  .info-label.yellow { color: var(--accent3); }
+  .info-label.red { color: var(--accent); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+
+  th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    background: var(--surface);
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-dim);
+  }
+
+  td:first-child {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--accent2);
+    font-size: 12px;
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── Init order ── */
+  .init-list {
+    list-style: none;
+    margin: 16px 0;
+  }
+
+  .init-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .init-num {
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: var(--accent);
+    min-width: 28px;
+    line-height: 1.3;
+  }
+
+  .init-text { font-size: 13px; line-height: 1.6; }
+  .init-text strong { color: var(--text); font-weight: 700; }
+  .init-text code { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--accent2); }
+
+  /* ── Script layers ── */
+  .layers {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px;
+    margin: 16px 0;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .layer-item {
+    background: var(--surface);
+    padding: 14px 16px;
+  }
+
+  .layer-name {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .layer-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ── Cache architecture ── */
+  .cache-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 16px 0;
+  }
+
+  .cache-layer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-radius: 4px;
+  }
+
+  .cache-badge {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    min-width: 90px;
+    text-align: center;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .badge-perm { background: rgba(255,210,60,0.15); color: var(--accent3); border: 1px solid rgba(255,210,60,0.3); }
+  .badge-curr { background: rgba(60,255,216,0.1); color: var(--accent2); border: 1px solid rgba(60,255,216,0.25); }
+  .badge-sec  { background: rgba(255,60,120,0.1); color: var(--accent); border: 1px solid rgba(255,60,120,0.25); }
+
+  .cache-info { font-size: 13px; color: var(--text-dim); }
+  .cache-info strong { color: var(--text); }
+
+  /* ── Compat matrix ── */
+  .compat-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+  }
+
+  .tag-yes { background: rgba(60,255,216,0.1); color: var(--accent2); }
+  .tag-partial { background: rgba(255,210,60,0.1); color: var(--accent3); }
+  .tag-no { background: rgba(255,60,120,0.1); color: var(--accent); }
+
+  /* ── Inline code ── */
+  code {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    background: rgba(60,255,216,0.08);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  /* ── Text ── */
+  p { color: var(--text-dim); margin-bottom: 12px; font-size: 14px; line-height: 1.7; }
+  h3 { font-size: 15px; font-weight: 800; color: var(--text); margin: 20px 0 10px; }
+  h4 { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin: 16px 0 8px; }
+  ul { padding-left: 18px; color: var(--text-dim); font-size: 14px; line-height: 1.8; margin-bottom: 12px; }
+  ul li::marker { color: var(--accent); }
+  strong { color: var(--text); }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── Footer ── */
+  .wiki-footer {
+    margin-top: 80px;
+    padding: 32px 64px;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ── Animation ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero h1, .hero-desc, .hero-meta {
+    animation: fadeUp 0.5s ease both;
+  }
+  .hero-desc { animation-delay: 0.1s; }
+  .hero-meta { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">COOL ENGINE</div>
+      <div class="logo-sub">Developer Wiki</div>
+      <span class="version-badge">v0.6.0B</span>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Overview</div>
+      <a class="nav-item highlight active" href="#overview">Introduction</a>
+      <a class="nav-item" href="#init">Initialization Order</a>
+      <a class="nav-item" href="#settings">Engine Settings</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Core Systems</div>
+      <a class="nav-item" href="#cache">Asset Cache (3-Layer)</a>
+      <a class="nav-item" href="#scripting">Scripting System</a>
+      <a class="nav-item" href="#events">Event System</a>
+      <a class="nav-item" href="#gameplay">Gameplay / PlayState</a>
+      <a class="nav-item" href="#notes">Note System</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Content</div>
+      <a class="nav-item" href="#mods">Mod System</a>
+      <a class="nav-item" href="#addons">Addon System</a>
+      <a class="nav-item" href="#charts">Chart Formats</a>
+      <a class="nav-item" href="#cutscenes">Cutscenes</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Subsystems</div>
+      <a class="nav-item" href="#shaders">Shaders</a>
+      <a class="nav-item" href="#audio">Audio System</a>
+      <a class="nav-item" href="#rendering">Rendering / GPU</a>
+      <a class="nav-item" href="#debug">Debug Tools</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Reference</div>
+      <a class="nav-item" href="#compat">Mod Compatibility</a>
+      <a class="nav-item" href="#paths">Folder Paths</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Scripting Guides</div>
+      <a class="nav-item highlight" href="#hscript-guide">HScript Full API</a>
+      <a class="nav-item highlight" href="#lua-guide">Lua Full API</a>
+      <a class="nav-item" href="#custom-states">Custom States</a>
+      <a class="nav-item" href="#char-scripts">Character Scripts</a>
+      <a class="nav-item" href="#cutscene-scripts">Cutscene Scripting</a>
+      <a class="nav-item" href="#dialogue-scripts">Dialogue System</a>
+      <a class="nav-item" href="#note-types">Custom Note Types</a>
+      <a class="nav-item highlight" href="#scripting-callbacks">Callbacks & Cancelling</a>
+      <a class="nav-item highlight" href="#scripting-overrides">Overrides</a>
+      <a class="nav-item highlight" href="#scripting-states">Custom States</a>
+      <a class="nav-item highlight" href="#scripting-ui-api">UI API</a>
+      <a class="nav-item highlight" href="#scripting-comms">Script Communication</a>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main class="main">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-tag">// Developer Reference</div>
+      <h1>Cool <span>Engine</span></h1>
+      <div class="hero-desc">
+        A feature-rich Friday Night Funkin' engine built on HaxeFlixel / OpenFL.
+        Supports Lua &amp; HScript modding, multi-format chart compatibility, a 3-layer asset cache,
+        and a full suite of in-game editors.
+      </div>
+      <div class="hero-meta">
+        <div class="meta-item">
+          <span class="meta-label">Version</span>
+          <span class="meta-value">0.6.0B</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Language</span>
+          <span class="meta-value">Haxe 4+</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Framework</span>
+          <span class="meta-value">HaxeFlixel</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Resolution</span>
+          <span class="meta-value">1920×1080</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Overview -->
+      <section class="section" id="overview">
+        <div class="section-header">
+          <div class="section-icon">◈</div>
+          <div>
+            <div class="section-title">Overview</div>
+            <div class="section-sub">What is Cool Engine?</div>
+          </div>
+        </div>
+
+        <p>
+          Cool Engine is a full-featured Friday Night Funkin' fork aimed at modders and developers.
+          It extends the base game with a robust asset cache, multi-layer scripting, mod compatibility
+          for Psych Engine / Codename / V-Slice formats, in-game editors, 3D scene support, and a
+          native C++ extension layer for Windows/macOS/Linux.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">🗂️</div>
+            <div class="card-title">3-Layer Asset Cache</div>
+            <div class="card-body">PERMANENT / CURRENT / SECOND lifecycle management for textures, sounds and fonts between state switches.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-icon">📜</div>
+            <div class="card-title">Lua + HScript Modding</div>
+            <div class="card-body">Full Lua &amp; HScript scripting with a rich API covering gameplay hooks, character overrides, shader injection and more.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-icon">🔄</div>
+            <div class="card-title">Multi-Format Charts</div>
+            <div class="card-body">Loads Psych Engine, Codename, V-Slice, OsuMania, and StepMania charts natively with automatic detection.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🎛️</div>
+            <div class="card-title">In-Game Editors</div>
+            <div class="card-body">Chart Editor, Stage Editor, Animation Debugger, Dialogue Editor, Cutscene Editor, and a ModChart Editor.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-icon">🎮</div>
+            <div class="card-title">ModChart System</div>
+            <div class="card-body">Timed note modifiers and visual effects controlled by a dedicated ModChartManager with event-driven API.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-icon">🖥️</div>
+            <div class="card-title">3D Scene Support</div>
+            <div class="card-body">Lightweight 3D rendering via Flx3DScene — OBJ loading, material support, lighting, custom shaders.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Initialization -->
+      <section class="section" id="init">
+        <div class="section-header">
+          <div class="section-icon">▶</div>
+          <div>
+            <div class="section-title">Initialization Order</div>
+            <div class="section-sub">Main.hx bootstrap sequence</div>
+          </div>
+        </div>
+
+        <p>
+          The engine follows a strict 11-step initialization order in <code>Main.hx</code>
+          to ensure each subsystem has its dependencies ready before it starts.
+        </p>
+
+        <ul class="init-list">
+          <li class="init-item">
+            <span class="init-num">1</span>
+            <div class="init-text"><strong>DPI-awareness + dark mode</strong> — <code>InitAPI</code> calls <code>SetProcessDPIAware()</code> and enables dark titlebar. Must run before any window is created.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">2</span>
+            <div class="init-text"><strong>GC tuning</strong> — Garbage collector parameters configured before any assets are loaded.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">3</span>
+            <div class="init-text"><strong>Stage config</strong> — OpenFL stage scale mode and alignment set up.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">4</span>
+            <div class="init-text"><strong><code>AudioConfig.load()</code></strong> — Must run before <code>createGame()</code> so audio settings are ready before OpenAL initializes.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">5</span>
+            <div class="init-text"><strong>CrashHandler, DebugConsole</strong> — Crash reporting and dev console registered.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">6</span>
+            <div class="init-text"><strong><code>createGame()</code></strong> — FlxGame instance created, <code>FlxG</code> becomes available.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">7</span>
+            <div class="init-text"><strong><code>AudioConfig.applyToFlixel()</code></strong> — Settings pushed to FlxG audio after Flixel is ready.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">8</span>
+            <div class="init-text"><strong><code>WindowManager.init()</code></strong> — Window resize subscription and scale mode set.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">9</span>
+            <div class="init-text"><strong>Save data, keybinds, note skins</strong> — All FlxG-dependent systems (save file, key bindings, <code>NoteSkinSystem</code>) initialized.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">10</span>
+            <div class="init-text"><strong>UI overlays</strong> — <code>DataInfoUI</code>, <code>SoundTray</code>, and <code>ScreenshotPlugin</code> added to the stage.</div>
+          </li>
+          <li class="init-item">
+            <span class="init-num">11</span>
+            <div class="init-text"><strong><code>SystemInfo.init()</code></strong> — GPU/system information collected; requires <code>context3D</code> which is only available after the first rendered frame.</div>
+          </li>
+        </ul>
+
+        <div class="info-block">
+          <div class="info-label teal">// NOTE</div>
+          The initial state is <code>CacheState</code>, which preloads essential assets, then transitions to <code>TitleState</code>.
+        </div>
+      </section>
+
+      <!-- Engine Settings -->
+      <section class="section" id="settings">
+        <div class="section-header">
+          <div class="section-icon">⚙</div>
+          <div>
+            <div class="section-title">Engine Settings</div>
+            <div class="section-sub">EngineSettings.hx — centralized configuration</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>DEFAULT_FPS</td><td>60</td><td>Default FPS target on desktop</td></tr>
+            <tr><td>MIN_FPS</td><td>30</td><td>Minimum accepted FPS</td></tr>
+            <tr><td>MAX_FPS</td><td>2000</td><td>Maximum accepted FPS (0 = unlimited)</td></tr>
+            <tr><td>DEFAULT_WIDTH</td><td>1920</td><td>Default resolution width (1080p)</td></tr>
+            <tr><td>DEFAULT_HEIGHT</td><td>1080</td><td>Default resolution height (1080p)</td></tr>
+            <tr><td>ENGINE_VERSION</td><td>"0.6.0B"</td><td>Reported in crash logs and UI</td></tr>
+          </tbody>
+        </table>
+
+        <div class="info-block warn">
+          <div class="info-label yellow">// MIGRATION</div>
+          The legacy save field <code>FPSCap</code> is automatically migrated to <code>fpsTarget</code>
+          on first run. Always use <code>EngineSettings.setFPS()</code> from the options screen — never write directly to <code>FlxG.save.data</code>.
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- Cache -->
+      <section class="section" id="cache">
+        <div class="section-header">
+          <div class="section-icon">◫</div>
+          <div>
+            <div class="section-title">Asset Cache (FunkinCache v2)</div>
+            <div class="section-sub">3-layer lifecycle management</div>
+          </div>
+        </div>
+
+        <p>FunkinCache manages all texture, sound, and font assets using a three-layer system that balances memory efficiency with smooth state transitions.</p>
+
+        <div class="cache-layers">
+          <div class="cache-layer">
+            <span class="cache-badge badge-perm">PERMANENT</span>
+            <div class="cache-info"><strong>Essential UI, fonts.</strong> Never evicted. Marked with <code>markPermanentBitmap()</code> or <code>markPermanentSound()</code>.</div>
+          </div>
+          <div class="cache-layer">
+            <span class="cache-badge badge-curr">CURRENT</span>
+            <div class="cache-info"><strong>Active session assets.</strong> Moved to SECOND on <code>preStateSwitch</code>. New state can rescue assets back to CURRENT.</div>
+          </div>
+          <div class="cache-layer">
+            <span class="cache-badge badge-sec">SECOND</span>
+            <div class="cache-info"><strong>Previous session assets.</strong> Destroyed in <code>postStateSwitch</code> unless rescued. Batch eviction via <code>clearSecondLayer()</code>.</div>
+          </div>
+        </div>
+
+        <h3>Performance Improvements (v2)</h3>
+        <ul>
+          <li><strong>Batch eviction</strong> — <code>clearSecondLayer()</code> collects all keys then does a single-pass removal, avoiding Map re-hashing on each individual delete.</li>
+          <li><strong>Hot path optimization</strong> — <code>getBitmapData()</code> checks CURRENT first and short-circuits SECOND if not needed.</li>
+          <li><strong>O(1) counters</strong> — Bitmap/sound/font counts maintained as running totals, not computed by iterating.</li>
+          <li><strong>Mod fallback</strong> — Searches the active mod directory before falling back to disk.</li>
+          <li><strong>Eviction callbacks</strong> — Mods can register <code>onEvict</code> callbacks to react when their assets are destroyed.</li>
+        </ul>
+      </section>
+
+      <!-- Scripting -->
+      <section class="section" id="scripting">
+        <div class="section-header">
+          <div class="section-icon">📜</div>
+          <div>
+            <div class="section-title">Scripting System</div>
+            <div class="section-sub">ScriptHandler v3 — Lua &amp; HScript</div>
+          </div>
+        </div>
+
+        <p>ScriptHandler v3 manages all scripts with a layered loading system. Scripts are organized by <strong>scope layer</strong> and loaded from predictable folder paths.</p>
+
+        <div class="layers">
+          <div class="layer-item">
+            <div class="layer-name">global</div>
+            <div class="layer-desc">Active for the entire game session. Loaded at startup.</div>
+          </div>
+          <div class="layer-item">
+            <div class="layer-name">stage</div>
+            <div class="layer-desc">Active during the current stage. Unloaded on stage change.</div>
+          </div>
+          <div class="layer-item">
+            <div class="layer-name">song</div>
+            <div class="layer-desc">Active during the current song. Unloaded after results.</div>
+          </div>
+          <div class="layer-item">
+            <div class="layer-name">ui</div>
+            <div class="layer-desc">HUD and UIScriptedManager scripts.</div>
+          </div>
+          <div class="layer-item">
+            <div class="layer-name">menu</div>
+            <div class="layer-desc">State scripts: FreeplayState, TitleState, etc.</div>
+          </div>
+          <div class="layer-item">
+            <div class="layer-name">char</div>
+            <div class="layer-desc">Per-character scripts bound to a specific character slot.</div>
+          </div>
+        </div>
+
+        <h3>Script Folder Paths</h3>
+        <div class="code-block teal">BASE GAME:
+  assets/data/scripts/global/          ← always-on global scripts
+  assets/data/scripts/events/          ← custom event handlers
+  assets/songs/{song}/scripts/         ← per-song scripts
+  assets/songs/{song}/events/          ← per-song custom events
+  assets/stages/{stage}/scripts/       ← per-stage scripts
+  assets/characters/{char}/scripts/    ← per-character scripts
+  assets/states/{state}/               ← state / menu scripts
+
+MODS:
+  mods/{mod}/scripts/global/
+  mods/{mod}/songs/{song}/scripts/
+  mods/{mod}/stages/{stage}/scripts/
+  mods/{mod}/characters/{char}/scripts/
+  mods/{mod}/states/{state}/
+  mods/{mod}/data/scripts/             ← additional alias
+
+PSYCH COMPAT:
+  mods/{mod}/custom_events/{event}.hx
+  mods/{mod}/custom_notetypes/{type}.hx</div>
+
+        <h3>Key Script Hooks (Gameplay)</h3>
+        <table>
+          <thead>
+            <tr><th>Hook</th><th>Trigger</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>onCreate</td><td>Script loaded and ready</td></tr>
+            <tr><td>onUpdate(elapsed)</td><td>Every game frame</td></tr>
+            <tr><td>onUpdatePost(elapsed)</td><td>After all update logic</td></tr>
+            <tr><td>onBeatHit(beat)</td><td>Every beat of the music</td></tr>
+            <tr><td>onStepHit(step)</td><td>Every step of the music</td></tr>
+            <tr><td>onNoteHit(note)</td><td>Player successfully hits a note</td></tr>
+            <tr><td>onNoteHitPre(note)</td><td>Before note-hit logic (can cancel)</td></tr>
+            <tr><td>onMiss(note)</td><td>Player misses a note</td></tr>
+            <tr><td>onHold(note)</td><td>Hold note sustained</td></tr>
+            <tr><td>onHoldEnd(note)</td><td>Hold note released</td></tr>
+            <tr><td>onSongStart</td><td>Song begins after countdown</td></tr>
+            <tr><td>onSongEnd</td><td>Song finishes</td></tr>
+            <tr><td>onCountdownTick(tick)</td><td>Countdown tick before song</td></tr>
+            <tr><td>onCountdownEnd</td><td>Countdown finished</td></tr>
+            <tr><td>onPause</td><td>Game paused</td></tr>
+            <tr><td>onResume</td><td>Game resumed</td></tr>
+            <tr><td>onGameOver</td><td>Player dies</td></tr>
+            <tr><td>onGameOverRestart</td><td>Player restarts from game over</td></tr>
+            <tr><td>onSectionHit(section)</td><td>Chart section crossed</td></tr>
+            <tr><td>onChartEvent(event)</td><td>Custom chart event fired</td></tr>
+            <tr><td>onKeyPressed(key)</td><td>Any key pressed</td></tr>
+            <tr><td>onKeyJustPressed(key)</td><td>Key pressed this frame</td></tr>
+            <tr><td>onKeyJustReleased(key)</td><td>Key released this frame</td></tr>
+            <tr><td>onFocusLost</td><td>Window loses focus</td></tr>
+            <tr><td>onFocusGained</td><td>Window gains focus</td></tr>
+            <tr><td>onDestroy</td><td>Script being unloaded</td></tr>
+          </tbody>
+        </table>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             RULESCRIPT  (new in v0.6.0B)
+        ════════════════════════════════════════════════════════════════ -->
+
+        <h2 id="rulescript">RuleScript — LuaJIT Scripting</h2>
+        <p>
+          RuleScript is the primary scripting system in Cool Engine v0.6.0B.
+          Scripts are plain <code>.lua</code> files with a transparent bridge
+          to <strong>all Haxe classes and instances</strong> — no sandboxing,
+          no wrapper functions to memorise. Just real Lua with full OOP access.
+        </p>
+        <p>
+          RuleScript replaces the old handle-based
+          system. All legacy helper functions (<code>newObject</code>,
+          <code>setProp</code>, <code>getProperty</code>, etc.) remain available
+          for backward compatibility, but you no longer need them.
+        </p>
+
+        <h3>Enabling RuleScript</h3>
+        <p>Add these lines to your <code>Project.xml</code>:</p>
+        <div class="code-block purple">&lt;haxedef name="LUA_ALLOWED"/&gt;
+&lt;haxelib name="linc_luajit"/&gt;</div>
+        <p>Then place <code>.lua</code> files in any of the script folder paths shown above.</p>
+
+        <h3>Live Globals</h3>
+        <p>These objects are available in every RuleScript automatically:</p>
+        <table>
+          <thead><tr><th>Global</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>game</code></td><td>PlayState</td><td>Current PlayState instance</td></tr>
+            <tr><td><code>bf</code></td><td>Character</td><td>Boyfriend character</td></tr>
+            <tr><td><code>dad</code></td><td>Character</td><td>Opponent character</td></tr>
+            <tr><td><code>gf</code></td><td>Character</td><td>Girlfriend character</td></tr>
+            <tr><td><code>stage</code></td><td>Stage</td><td>Current stage instance</td></tr>
+            <tr><td><code>FlxG</code></td><td>flixel.FlxG</td><td>Flixel global access</td></tr>
+            <tr><td><code>Conductor</code></td><td>Conductor</td><td>Music timing</td></tr>
+            <tr><td><code>Paths</code></td><td>Paths</td><td>Asset path helpers</td></tr>
+          </tbody>
+        </table>
+
+        <h3>OOP Access</h3>
+        <p>All Haxe objects are accessed directly through Lua proxy tables. Fields are read/written with dot notation; methods are called with colon syntax (to pass <code>self</code>) or dot syntax.</p>
+        <div class="code-block purple">-- Direct field access
+game.health = 1.5
+bf.x = 400
+stage.zoom = 1.2
+
+-- Calling methods
+bf:playAnim("singLEFT", true)
+FlxG.camera:shake(0.04, 0.3)
+
+-- Chaining
+FlxG.state:add(someSprite)</div>
+
+        <h3>import</h3>
+        <p>
+          Imports a Haxe class or enum and registers it as a global short name.
+          You can use any of these syntaxes — they all do the same thing:
+        </p>
+        <table>
+          <thead><tr><th>Syntax</th><th>Where</th></tr></thead>
+          <tbody>
+            <tr><td><code>import "flixel.util.FlxColor"</code></td><td>Lua — no parens (recommended)</td></tr>
+            <tr><td><code>import("flixel.util.FlxColor")</code></td><td>Lua — function-call style</td></tr>
+            <tr><td><code>local C = import("flixel.util.FlxColor")</code></td><td>Lua — assign to local (also registers global)</td></tr>
+            <tr><td><code>import flixel.util.FlxColor;</code></td><td>HScript (.hx) — same as Haxe syntax</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Imports placed at the top of the file are resolved <strong>before</strong>
+          the interpreter runs, so the class is available everywhere — including
+          inside other imports and module-level code.
+        </p>
+        <div class="code-block purple">-- Lua (.lua) — clean top-of-file style
+import "flixel.util.FlxColor"
+import "flixel.tweens.FlxTween"
+import "flixel.tweens.FlxEase"
+import "flixel.FlxSprite"
+
+-- All four are now globals — use them anywhere:
+local spr = FlxSprite.new(100, 200)
+spr.color = FlxColor.RED
+FlxG.state:add(spr)
+
+FlxTween.tween(bf, {x = 500}, 0.5, {ease = FlxEase.quadOut})</div>
+        <div class="code-block teal">-- HScript (.hx) — same syntax as real Haxe
+import flixel.util.FlxColor;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
+
+// Classes available immediately after the import lines
+FlxTween.tween(bf, {x: 500}, 0.5, {ease: FlxEase.quadOut});</div>
+
+        <h3>before() / after() / replace()</h3>
+        <p>Three simple verbs for hooking into any method on any object. No <code>original</code> parameter, no <code>self</code> — just the actual arguments you care about.</p>
+        <table>
+          <thead><tr><th>Function</th><th>When your code runs</th><th>Cancel original?</th></tr></thead>
+          <tbody>
+            <tr><td><code>before(obj, method, fn)</code></td><td>Before the original</td><td>Yes — return <code>false</code></td></tr>
+            <tr><td><code>after(obj, method, fn)</code></td><td>After the original</td><td>No</td></tr>
+            <tr><td><code>replace(obj, method, fn)</code></td><td>Instead of the original</td><td>Always (original never runs)</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block purple">-- Add camera shake every beat — original logic still runs
+before(game, "onBeatHit", function(beat)
+    FlxG.camera:shake(0.02, 0.1)
+end)
+
+-- Run extra animation after dad finishes dancing
+after(dad, "dance", function()
+    dad:playAnim("extraBob", false)
+end)
+
+-- Fully replace bf's dance with a custom one
+replace(bf, "dance", function()
+    bf:playAnim("myIdle", true)
+end)
+
+-- Cancel the original based on a condition
+before(game, "onNoteHit", function(note)
+    if note.noteType == "ghost" then
+        return false   -- skip the original hit logic entirely
+    end
+end)</div>
+        <p><em>Legacy: <code>overrideMethod(obj, name, function(original, self, ...))</code> still works for backward compat.</em></p>
+
+        <h3>require()</h3>
+        <p>Loads another <code>.lua</code> file as a reusable module. The module's global exports are returned as a table. Results are cached — the file runs only once.</p>
+        <div class="code-block purple">-- songs/mymod/utils.lua  →  define exports in a table
+local M = {}
+function M.lerp(a, b, t) return a + (b - a) * t end
+return M
+
+-- In your song script:
+local utils = require("songs/mymod/utils")
+bf.x = utils.lerp(bf.x, 500, 0.1)</div>
+
+        <h3>Custom Classes</h3>
+        <p>Use the built-in <code>Class</code> helper to define OOP classes in Lua. Instances are created with <code>ClassName.new(...)</code> and the <code>init</code> method is called automatically.</p>
+        <div class="code-block purple">MyBoss = Class {
+    init = function(self, x, y)
+        local Sprite = import("flixel.FlxSprite")
+        self.sprite = Sprite.new(x, y)
+        self.sprite:loadGraphic(Paths.image("boss"), true, 200, 200)
+        self.hp = 100
+        FlxG.state:add(self.sprite)
+    end,
+
+    takeDamage = function(self, amount)
+        self.hp = self.hp - amount
+        if self.hp &lt;= 0 then self:die() end
+    end,
+
+    die = function(self)
+        local Tween = import("flixel.tweens.FlxTween")
+        Tween.tween(self.sprite, {alpha = 0}, 0.6)
+    end
+}
+
+-- Create an instance
+local boss = MyBoss.new(640, 100)</div>
+
+        <h3>Inheritance</h3>
+        <p>Extend an existing class by passing it as the second argument to <code>Class</code>:</p>
+        <div class="code-block purple">Animal = Class {
+    init = function(self, name) self.name = name end,
+    speak = function(self) return "..." end
+}
+
+Dog = Class({
+    speak = function(self) return self.name .. " says Woof!" end
+}, Animal)
+
+local d = Dog.new("Rex")
+print(d:speak())  -- "Rex says Woof!"</div>
+
+        <h3>switchState()</h3>
+        <p>Transition to any engine state by name:</p>
+        <div class="code-block purple">switchState("MainMenuState")
+switchState("FreeplayState")
+switchState("PlayState")   -- restarts the song</div>
+
+        <h3>Legacy API (backward compat)</h3>
+        <p>All old Lua wrapper functions still work. You do not need to migrate existing scripts.</p>
+        <table>
+          <thead><tr><th>Function</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>newObject(class, ...)</code></td><td>Create a Haxe object, returns handle</td></tr>
+            <tr><td><code>setProp(handle, field, val)</code></td><td>Set a field on a handle object</td></tr>
+            <tr><td><code>getProp(handle, field)</code></td><td>Get a field from a handle object</td></tr>
+            <tr><td><code>callMethod(handle, name, ...)</code></td><td>Call a method on a handle object</td></tr>
+            <tr><td><code>getGameProp(field)</code></td><td>Get a field from PlayState</td></tr>
+            <tr><td><code>setGameProp(field, val)</code></td><td>Set a field on PlayState</td></tr>
+            <tr><td><code>makeSprite(tag, x, y)</code></td><td>Create and register a sprite</td></tr>
+            <tr><td><code>addSprite(tag)</code></td><td>Add registered sprite to scene</td></tr>
+            <tr><td><code>triggerAnim(handle, name, forced)</code></td><td>Play animation on a character</td></tr>
+            <tr><td><code>tweenPos(handle, x, y, t, ease)</code></td><td>Tween position</td></tr>
+            <tr><td><code>tweenAlpha(handle, alpha, t, ease)</code></td><td>Tween alpha</td></tr>
+            <tr><td><code>tweenColor(handle, color, t, ease)</code></td><td>Tween colour</td></tr>
+            <tr><td><code>playSound(path, vol)</code></td><td>Play a sound</td></tr>
+            <tr><td><code>playMusic(path, vol)</code></td><td>Play background music</td></tr>
+            <tr><td><code>shakeCamera(intensity, duration)</code></td><td>Shake the camera</td></tr>
+            <tr><td><code>flashCamera(color, duration)</code></td><td>Flash the camera</td></tr>
+            <tr><td><code>setHealth(val)</code></td><td>Set player health (0–2)</td></tr>
+            <tr><td><code>addHealth(val)</code></td><td>Add to player health</td></tr>
+            <tr><td><code>addScore(val)</code></td><td>Add to score</td></tr>
+            <tr><td><code>setScrollSpeed(val)</code></td><td>Change note scroll speed</td></tr>
+            <tr><td><code>makeLuaText(tag, text, size, x, y)</code></td><td>Create an on-screen text label</td></tr>
+            <tr><td><code>setTextString(tag, text)</code></td><td>Update text content</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Full RuleScript Example</h3>
+        <div class="code-block purple">-- Example: custom boss fight script (songs/bossfight/scripts/boss.lua)
+
+local FlxColor = import("flixel.util.FlxColor")
+local Tween    = import("flixel.tweens.FlxTween")
+local FlxEase  = import("flixel.tweens.FlxEase")
+
+local bossDefeated = false
+local hitCount = 0
+
+function onCreate()
+    log("Boss fight script loaded!")
+    -- Tint the stage slightly red
+    stage.background:setColorTransform(0, 0, 0, 1, 60, 0, 0, 0)
+end
+
+function onBeatHit(beat)
+    -- Make dad bounce harder on every 4th beat
+    if beat % 4 == 0 then
+        Tween.tween(dad, {y = dad.y - 20}, 0.1, {
+            ease = FlxEase.quadOut,
+            onComplete = function()
+                Tween.tween(dad, {y = dad.y + 20}, 0.1, {ease = FlxEase.quadIn})
+            end
+        })
+    end
+end
+
+function onNoteHit(note)
+    hitCount = hitCount + 1
+    if hitCount >= 50 and not bossDefeated then
+        bossDefeated = true
+        log("Boss defeated!")
+        Tween.tween(dad, {alpha = 0}, 1.0, {ease = FlxEase.quadIn})
+    end
+end
+
+function onDestroy()
+    log("Boss fight script unloaded.")
+end</div>
+
+        <h3>Minimal state example</h3>
+        <div class="code-block teal">// mods/my-mod/states/MyState/script.hx
+
+var bg:FlxSprite;
+var label:FlxText;
+
+function onCreate() {
+    // Black background
+    bg = new FlxSprite(0, 0);
+    bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.fromRGB(10, 10, 20));
+    add(bg);
+
+    // Title text
+    label = new FlxText(0, 100, FlxG.width, "MY CUSTOM STATE", 48);
+    label.alignment = "center";
+    label.color = FlxColor.fromRGB(255, 60, 120);
+    add(label);
+}
+
+function onUpdate(elapsed:Float) {
+    // Pulse the label
+    label.alpha = 0.5 + 0.5 * Math.sin(FlxG.game.ticks / 300.0);
+}
+
+function onKeyJustPressed(key) {
+    if (FlxG.keys.justPressed.ESCAPE) switchState("MainMenuState");
+}</div>
+
+        <h3>State with animated sprite &amp; sounds</h3>
+        <div class="code-block teal">// mods/my-mod/states/IntroState/script.hx
+
+var char:Dynamic;
+
+function onCreate() {
+    var spr = new FunkinSprite(300, 200);
+    spr.loadSparrow("images/characters/bf/BF_assets");
+    spr.addAnim("idle", "BF idle dance", 24, true);
+    spr.playAnim("idle");
+    spr.screenCenter();
+    add(spr);
+    char = spr;
+
+    playSound("confirmMenu");
+}
+
+function onBeatHit(beat:Int) {
+    if (beat % 2 == 0) char.playAnim("idle", true);
+}
+
+function onKeyJustPressed(key) {
+    if (FlxG.keys.justPressed.ENTER) {
+        playSound("confirmMenu");
+        stickerSwitch(new funkin.gameplay.PlayState());
+    }
+}</div>
+
+        <h3>Scripted SubState</h3>
+        <div class="code-block teal">// File: mods/my-mod/states/MyPopup/popup.hx
+
+function onCreate() {
+    // Semi-transparent overlay
+    var overlay = new FlxSprite(0, 0);
+    overlay.makeGraphic(FlxG.width, FlxG.height, FlxColor.fromRGBFloat(0, 0, 0, 0.6));
+    add(overlay);
+
+    var txt = new FlxText(0, FlxG.height / 2 - 30, FlxG.width, "Press ENTER to continue", 28);
+    txt.alignment = "center";
+    add(txt);
+}
+
+function onKeyJustPressed(key) {
+    if (FlxG.keys.justPressed.ENTER || FlxG.keys.justPressed.ESCAPE)
+        state.closeSubState();
+}
+
+// To open it from another state script:
+// FlxG.state.openSubState(new funkin.scripting.ScriptableState("MyPopup"))</div>
+
+        <h3>Available helpers inside StateScript</h3>
+        <div class="code-block teal">// Display list — same as a real FlxState
+add(spr);
+remove(spr);
+insert(pos, spr);
+
+// Read / write any field on the state
+getField("fieldName")           // read
+setField("fieldName", value)    // write
+callMethod("methodName", [arg1, arg2])
+
+// Refresh state fields into the script scope (after state creates new objects)
+refreshFields()
+
+// Sound — direct or via helpers
+playSound("menus/confirmMenu");
+playMusic("freakyMenu");
+stopMusic();
+FlxG.sound.play(Paths.sound("confirm"))   // also works</div>
+      </section>
+
+      <!-- Character Scripts -->
+      <section class="section" id="events">
+        <div class="section-header">
+          <div class="section-icon">⚡</div>
+          <div>
+            <div class="section-title">Event System</div>
+            <div class="section-sub">EventManager + EventRegistry</div>
+          </div>
+        </div>
+
+        <p>Chart events are processed by <code>EventManager</code>, which dispatches typed events to registered handlers. Custom event types are registered in <code>EventRegistry</code> and can be defined by mods.</p>
+
+        <h3>Built-in Event Types</h3>
+        <table>
+          <thead><tr><th>Event</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Camera Follow</td><td>Moves the camera to focus player or opponent. Used by Cool Engine instead of implicit mustHitSection.</td></tr>
+            <tr><td>BPM Change</td><td>Changes the song BPM mid-track, updates the Conductor.</td></tr>
+            <tr><td>Hey!</td><td>Triggers the "Hey!" animation on a character.</td></tr>
+            <tr><td>Set GF Speed</td><td>Changes the GF bopping speed.</td></tr>
+            <tr><td>Add Camera Zoom</td><td>Bump-zooms the game/HUD cameras.</td></tr>
+            <tr><td>Alt Anim</td><td>Forces alt animation on a character.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="info-block warn">
+          <div class="info-label yellow">// PSYCH COMPAT</div>
+          When loading Psych Engine charts, <code>PsychConverter</code> generates explicit "Camera Follow" events from <code>mustHitSection</code> flags so the event system processes them consistently.
+        </div>
+      </section>
+
+<section class="section" id="gameplay">
+        <div class="section-header">
+          <div class="section-icon">🎮</div>
+          <div>
+            <div class="section-title">Gameplay / PlayState</div>
+            <div class="section-sub">Core gameplay loop</div>
+          </div>
+        </div>
+
+        <p><code>PlayState</code> is the main gameplay state. It coordinates all gameplay subsystems through dedicated controller classes, keeping the core file manageable.</p>
+
+        <div class="card-grid">
+          <div class="card teal">
+            <div class="card-title">NoteManager</div>
+            <div class="card-body">Spawning, culling, timing windows, sustain processing, and miss detection for all note types.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-title">CameraController</div>
+            <div class="card-body">Handles camera focusing, zoom bumps, and following based on Camera Follow events.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-title">CharacterController</div>
+            <div class="card-body">Manages character animations, alt-anim switching, dance cycles, and character freeze/unfreeze.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-title">RatingManager</div>
+            <div class="card-body">Tracks score, accuracy, combo, misses, and determines rating (Sick/Good/Bad/Shit) based on timing windows.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-title">InputHandler</div>
+            <div class="card-body">Processes key presses, maps them to note directions, handles hold states and ghost tapping.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-title">UIScriptedManager</div>
+            <div class="card-body">Manages the HUD — supports scripted/custom HUD replacement from mods.</div>
+          </div>
+        </div>
+      </section>
+
+<section class="section" id="notes">
+        <div class="section-header">
+          <div class="section-icon">♩</div>
+          <div>
+            <div class="section-title">Note System</div>
+            <div class="section-sub">NoteSkinSystem + NotePool + NoteBatcher</div>
+          </div>
+        </div>
+
+        <p>The note system is built for performance, using object pooling and GPU batching to handle large note counts without hitching.</p>
+
+        <ul>
+          <li><strong>NotePool</strong> — Object pool that recycles Note instances. Avoids garbage collection spikes during dense sections.</li>
+          <li><strong>NoteBatcher</strong> — Groups note draw calls into batches sent to the GPU renderer in a single pass.</li>
+          <li><strong>NoteSkinSystem</strong> — Loads per-skin note graphics from <code>assets/images/noteSkins/</code>. Skins can override arrows, holds, splashes, and cover animations.</li>
+          <li><strong>NoteHoldCover</strong> — Animated cover that plays when a hold note starts, driven by a shader clip for seamless visual continuity.</li>
+          <li><strong>NoteSplash</strong> — Hit effect sprites pooled and reused on Sick hits.</li>
+        </ul>
+
+        <div class="code-block">// NoteData column layout (standard 4K)
+// Columns 0-3  → Player   (BF, right side)
+// Columns 4-7  → Opponent (Dad, left side)
+// Columns ≥ 8  → Extra groups (never swap)
+
+// Column → Direction mapping
+0 = Left   1 = Down   2 = Up   3 = Right</div>
+      </section>
+
+<section class="section" id="mods">
+        <div class="section-header">
+          <div class="section-icon">📦</div>
+          <div>
+            <div class="section-title">Mod System</div>
+            <div class="section-sub">ModManager + mod.json</div>
+          </div>
+        </div>
+
+        <p>Mods live in the <code>mods/</code> directory. Each mod is a folder with a <code>mod.json</code> descriptor. Only one mod can be active at a time. Use <code>ModManager.setActiveMod(id)</code> to switch.</p>
+
+        <h3>mod.json Structure</h3>
+        <div class="code-block yellow">{
+  "name":           "My Mod",
+  "description":    "A cool mod.",
+  "author":         "YourName",
+  "version":        "1.0.0",
+  "priority":       0,
+  "color":          "FF5599",
+  "website":        "https://...",
+  "enabled":        true,
+  "startupDefault": false,
+  "appTitle":       "My Mod — FNF",
+  "appIcon":        "icon",
+  "developerMode":  true,
+
+  "discord": {
+    "clientId":       "123456789",
+    "largeImageKey":  "mymod_icon",
+    "largeImageText": "My Mod",
+    "menuDetails":    "Playing My Mod"
+  }
+}</div>
+
+        <h3>Mod Folder Structure</h3>
+        <div class="code-block">mods/my-mod/
+  ├── mod.json         ← required
+  ├── preview.mp4      ← video preview in selector (optional)
+  ├── preview.png      ← image preview fallback (optional)
+  ├── icon.png         ← square icon (optional)
+  ├── songs/
+  ├── characters/
+  ├── stages/
+  ├── images/
+  ├── sounds/
+  ├── music/
+  ├── data/
+  ├── scripts/
+  └── videos/</div>
+
+        <h3>Engine Overrides</h3>
+        <p>Mods can override engine behavior via <code>mod_overrides.json</code> or a <code>ModEngineOverride</code> class. Overrideable systems include: HUD class, note spawning system, character loading, stage loading.</p>
+      </section>
+
+<section class="section" id="addons">
+        <div class="section-header">
+          <div class="section-icon">🔌</div>
+          <div>
+            <div class="section-title">Addon System</div>
+            <div class="section-sub">AddonManager + addon.json</div>
+          </div>
+        </div>
+
+        <p>Addons are lightweight plugins that run <em>on top of</em> any active mod. Unlike mods, multiple addons can be active simultaneously. They are loaded after mods so they can read the active folder.</p>
+
+        <div class="info-block">
+          <div class="info-label teal">// ADDON vs MOD</div>
+          <strong>Mods</strong> replace assets and define full song/story content. Only one active at a time.<br>
+          <strong>Addons</strong> inject gameplay mechanics or UI changes on top of any mod. Multiple can be active.
+        </div>
+
+        <h3>addon.json Hooks</h3>
+        <div class="code-block teal">"hooks": {
+  "onNoteHit":     "scripts/onNoteHit.hx",
+  "onMissNote":    "scripts/onMiss.hx",
+  "onSongStart":   "scripts/onSongStart.hx",
+  "onSongEnd":     "scripts/onSongEnd.hx",
+  "onBeat":        "scripts/onBeat.hx",
+  "onStep":        "scripts/onStep.hx",
+  "onUpdate":      "scripts/onUpdate.hx",
+  "onCountdown":   "scripts/onCountdown.hx",
+  "onGameOver":    "scripts/onGameOver.hx",
+  "onStateCreate": "scripts/onStateCreate.hx",
+  "onStateSwitch": "scripts/onStateSwitch.hx",
+  "exposeAPI":     "scripts/exposeAPI.hx"
+}</div>
+      </section>
+
+<section class="section" id="charts">
+        <div class="section-header">
+          <div class="section-icon">♫</div>
+          <div>
+            <div class="section-title">Chart Formats</div>
+            <div class="section-sub">Multi-format chart loading</div>
+          </div>
+        </div>
+
+        <p><code>ChartLoader</code> auto-detects chart format and routes to the appropriate parser. No manual format specification required.</p>
+
+        <table>
+          <thead><tr><th>Format</th><th>Parser</th><th>Detection</th></tr></thead>
+          <tbody>
+            <tr><td>Psych Engine</td><td>PsychChartParser</td><td><code>mustHitSection</code> field present</td></tr>
+            <tr><td>Codename Engine</td><td>CodenameChartParser</td><td>No V-Slice fields, has codename markers</td></tr>
+            <tr><td>V-Slice (FNF 2.0)</td><td>VSliceConverter</td><td><code>scrollSpeed</code> + <code>events</code> array at root</td></tr>
+            <tr><td>OsuMania</td><td>OsuManiaParser</td><td><code>.osu</code> file extension</td></tr>
+            <tr><td>StepMania</td><td>StepManiaParser</td><td><code>.sm</code> / <code>.ssc</code> file extension</td></tr>
+          </tbody>
+        </table>
+
+        <div class="info-block warn">
+          <div class="info-label yellow">// CAMERA EVENTS</div>
+          Cool Engine uses explicit <strong>"Camera Follow"</strong> events instead of Psych's implicit <code>mustHitSection</code>. Psych charts are automatically converted during loading — existing mods do not need to be updated.
+        </div>
+      </section>
+
+<section class="section" id="cutscenes">
+        <div class="section-header">
+          <div class="section-icon">🎬</div>
+          <div>
+            <div class="section-title">Cutscenes</div>
+            <div class="section-sub">SpriteCutscene + Video + Dialogue</div>
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">SpriteCutscene</div>
+            <div class="card-body">Scripted sprite-based cutscenes defined in JSON. Supports tweens, sound effects, camera moves, and script callbacks.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-title">Video (MP4/WebM)</div>
+            <div class="card-body">Video playback via hxvlc with subtitle support (SRT parser). VideoManager handles state lifecycle and audio sync.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">DialogueBox</div>
+            <div class="card-body">Improved dialogue system with per-character portraits, typewriter effect, opacity/bold/fade transitions.</div>
+          </div>
+        </div>
+
+        <h3>Subtitle Support</h3>
+        <p>The <code>SubtitleManager</code> + <code>SRTParser</code> provides full SRT subtitle rendering for videos, with configurable styles (font, size, position, background).</p>
+      </section>
+
+<section class="section" id="audio">
+        <div class="section-header">
+          <div class="section-icon">🔊</div>
+          <div>
+            <div class="section-title">Audio System</div>
+            <div class="section-sub">CoreAudio + AudioConfig</div>
+          </div>
+        </div>
+
+        <p><code>CoreAudio</code> wraps OpenAL for low-latency audio. <code>MusicManager</code> handles background music transitions. Character-specific vocals are loaded as streaming audio.</p>
+
+        <ul>
+          <li><strong>AudioConfig</strong> — Loaded before <code>createGame()</code>. Configures sample rate, period size, and latency before OpenAL initializes.</li>
+          <li><strong>VolumePlugin</strong> — Manages master, music, and SFX volume levels with smooth tweening.</li>
+          <li><strong>VSyncAPI</strong> — Native VSync control. Prevents audio drift on high-refresh-rate displays.</li>
+          <li><strong>FrameLimiterAPI</strong> — Improves OS timer precision (Windows: <code>timeBeginPeriod(1)</code>) for accurate high-FPS pacing.</li>
+        </ul>
+      </section>
+
+<section class="section" id="rendering">
+        <div class="section-header">
+          <div class="section-icon">⬡</div>
+          <div>
+            <div class="section-title">Rendering & GPU</div>
+            <div class="section-sub">GPURenderer + OptimizationManager</div>
+          </div>
+        </div>
+
+        <ul>
+          <li><strong>GPURenderer</strong> — Manages sprite batching pools, submits batched draw calls to reduce GPU overhead during gameplay.</li>
+          <li><strong>RenderOptimizer</strong> — Tracks render budget per frame, applies adaptive quality (lower effect resolution, skip optional passes).</li>
+          <li><strong>OptimizationManager</strong> — Coordinates GPU and CPU optimization levels based on real-time performance metrics.</li>
+          <li><strong>FunkinCamera</strong> — Extended FlxCamera with built-in shader filter support and fixed BitmapData for zero-allocation frame capture.</li>
+          <li><strong>Flx3DScene</strong> — Lightweight 3D rendering layer built on Stage3D/Context3D. Supports OBJ models, .mtl materials, lighting, and custom GLSL shaders.</li>
+        </ul>
+      </section>
+
+<section class="section" id="debug">
+        <div class="section-header">
+          <div class="section-icon">🛠</div>
+          <div>
+            <div class="section-title">Debug Tools</div>
+            <div class="section-sub">EditorHubState + in-game editors</div>
+          </div>
+        </div>
+
+        <p>All editors are accessible from <code>EditorHubState</code>, opened via a debug menu shortcut during gameplay (when Developer Mode is enabled in mod settings).</p>
+
+        <div class="card-grid">
+          <div class="card yellow">
+            <div class="card-title">Chart Editor</div>
+            <div class="card-body">Full-featured chart editor with BPM detection, note placement, event sidebar, multi-selection, and undo/redo.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Stage Editor</div>
+            <div class="card-body">Visual stage builder. Drag-and-drop sprites, set Z-order, configure parallax scrolling.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Animation Debugger</div>
+            <div class="card-body">Preview and edit character animations. Add/remove animation entries, test playback, adjust offsets.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Dialogue Editor</div>
+            <div class="card-body">Build dialogue sequences visually with character portraits, text timing, and emotion states.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Cutscene Editor</div>
+            <div class="card-body">Timeline-based editor for SpriteCutscene JSON sequences.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Shader Editor</div>
+            <div class="card-body">Live GLSL shader editing with real-time preview and hot-reload.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Script Watcher</div>
+            <div class="card-body">Watches script files for changes and hot-reloads them without restarting the game.</div>
+          </div>
+          <div class="card yellow">
+            <div class="card-title">Game Dev Console</div>
+            <div class="card-body">In-game console for executing HScript/Lua snippets, inspecting state, and logging.</div>
+          </div>
+        </div>
+      </section>
+
+<section class="section" id="compat">
+        <div class="section-header">
+          <div class="section-icon">↔</div>
+          <div>
+            <div class="section-title">Mod Compatibility</div>
+            <div class="section-sub">Cross-engine mod support</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Engine</th>
+              <th>Charts</th>
+              <th>Stages</th>
+              <th>Scripts</th>
+              <th>Characters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Psych Engine</td>
+              <td><span class="compat-tag tag-yes">✔ auto</span></td>
+              <td><span class="compat-tag tag-yes">✔ converter</span></td>
+              <td><span class="compat-tag tag-yes">✔ Lua compat</span></td>
+              <td><span class="compat-tag tag-yes">✔</span></td>
+            </tr>
+            <tr>
+              <td>Codename Engine</td>
+              <td><span class="compat-tag tag-yes">✔ auto</span></td>
+              <td><span class="compat-tag tag-yes">✔ XML converter</span></td>
+              <td><span class="compat-tag tag-partial">~ partial</span></td>
+              <td><span class="compat-tag tag-yes">✔</span></td>
+            </tr>
+            <tr>
+              <td>V-Slice (FNF 2.0)</td>
+              <td><span class="compat-tag tag-yes">✔ auto</span></td>
+              <td><span class="compat-tag tag-partial">~ partial</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+              <td><span class="compat-tag tag-yes">✔</span></td>
+            </tr>
+            <tr>
+              <td>OsuMania</td>
+              <td><span class="compat-tag tag-yes">✔ .osu</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+            </tr>
+            <tr>
+              <td>StepMania</td>
+              <td><span class="compat-tag tag-yes">✔ .sm/.ssc</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+              <td><span class="compat-tag tag-no">✖</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+<section class="section" id="paths">
+        <div class="section-header">
+          <div class="section-icon">📁</div>
+          <div>
+            <div class="section-title">Canonical Folder Paths</div>
+            <div class="section-sub">Asset organization reference</div>
+          </div>
+        </div>
+
+        <div class="code-block">assets/
+  images/
+    characters/         ← character spritesheets
+    stages/             ← stage sprites
+    ui/                 ← UI elements (health icons, ratings…)
+    noteSkins/          ← note skin atlases
+  sounds/               ← SFX
+  music/                ← background music
+  songs/
+    {songName}/
+      {songName}.json   ← chart data
+      Inst.ogg          ← instrumental
+      Voices.ogg        ← vocals (or Voices-bf.ogg / Voices-dad.ogg)
+  data/
+    characters/         ← character JSON definitions
+    stages/             ← stage JSON definitions
+    weeks/              ← week/level JSON
+    scripts/global/     ← always-on scripts
+    scripts/events/     ← event handler scripts
+  videos/               ← cutscene MP4/WebM files
+
+mods/
+  {modName}/
+    mod.json            ← mod metadata
+    [mirrors assets/ structure]</div>
+      </section>
+
+<section class="section" id="hscript-guide">
+        <div class="section-header">
+          <div class="section-icon">📝</div>
+          <div>
+            <div class="section-title">HScript — Full API Reference</div>
+            <div class="section-sub">All exposed globals you can use in .hx scripts</div>
+          </div>
+        </div>
+
+        <p>HScript files are placed in the appropriate folder (e.g. <code>mods/{mod}/songs/{song}/scripts/myscript.hx</code>). The engine injects all of these variables automatically — you don't need to import anything.</p>
+
+        <h3>Flixel Core</h3>
+        <div class="code-block teal">// Available directly — no import needed
+FlxG          // FlxG global (cameras, sound, keys, etc.)
+FlxSprite     // Base sprite class
+FlxTween      // Tween engine
+FlxEase       // Easing functions (FlxEase.sineOut, etc.)
+FlxColor      // Color utilities (FlxColor.RED, FlxColor.fromRGB, etc.)
+FlxTimer      // Timer class
+FlxSound      // Sound class
+FlxCamera     // Camera class
+FlxObject     // Base object
+FlxText       // Text sprite
+FlxGroup      // Sprite group
+FlxSpriteGroup
+FlxBackdrop   // Infinite scrolling background
+FlxTrail      // Trail effect
+FlxMath       // Math utils (lerp, bound, remapToRange, etc.)
+FlxPoint      // 2D point
+FlxRect       // Rectangle
+FunkinSprite  // Engine's extended sprite (auto-detects Sparrow/Atlas/Packer)
+FlxAnimate    // Adobe Animate texture atlas
+BitmapData    // OpenFL bitmap
+WiggleEffect  // Wave distortion
+WaveEffect    // Wave shader
+BlendModeEffect</div>
+
+        <h3>Gameplay Globals</h3>
+        <div class="code-block teal">game          // PlayState.instance — access to everything in the current song
+Conductor     // Conductor.bpm, Conductor.songPosition, Conductor.curBeat
+Paths         // Asset paths helper (Paths.image("x"), Paths.sound("x"), etc.)
+MetaData      // Current song metadata (title, artist, difficulty, etc.)
+Song          // Song data class
+Note          // Note class
+ModManager    // Active mod info
+ShaderManager // Apply/remove shaders
+ModChartManager // ModChart system</div>
+
+        <h3>Gameplay — <code>game.*</code></h3>
+        <div class="code-block">// Access the PlayState directly
+game.health          // 0.0 – 2.0
+game.score           // current score (Int)
+game.misses          // total misses
+game.combo           // current combo
+game.curBeat         // current beat number
+game.curStep         // current step number
+game.boyfriend       // BF character instance
+game.dad             // opponent character instance
+game.gf              // GF character instance
+game.camGame         // game camera (FlxCamera)
+game.camHUD          // HUD camera
+game.endSong()       // end the current song
+game.pauseSong()     // pause
+game.resumeSong()    // resume
+game.gameOver()      // trigger game over</div>
+
+        <h3>Score Object — <code>score.*</code></h3>
+        <div class="code-block">score.getScore()                    // → Int
+score.getAccuracy()                 // → Float (0.0–1.0)
+score.getCombo()                    // → Int
+score.getMisses()                   // → Int
+score.getSicks()                    // → Int
+score.addScore(100)                 // add to score
+score.resetCombo()                  // break combo
+score.isFullCombo()                 // → Bool
+score.isSickCombo()                 // → Bool (all Sicks)
+
+// Customize timing windows (in ms)
+score.setWindow("sick", 45)
+score.setWindow("good", 90)
+score.setWindow("bad",  135)
+score.setWindow("shit", 180)
+
+// Customize point values
+score.setPoints("sick", 350)
+score.setPoints("good", 200)
+score.setMissPenalty(10)</div>
+
+        <h3>Camera Object — <code>camera.*</code></h3>
+        <div class="code-block">camera.game()            // → camGame FlxCamera
+camera.hud()             // → camHUD FlxCamera
+camera.setZoom(0.9)
+camera.getZoom()         // → Float
+camera.tweenZoom(0.9, 0.5, FlxEase.sineOut)
+camera.shake()           // default intensity 0.03, duration 0.2
+camera.shake(0.05, 0.4, camera.game())
+camera.flash()           // white flash
+camera.flash(FlxColor.RED, 0.5)
+camera.fade(FlxColor.BLACK, 1.0)
+camera.focusBf()         // point camera at BF
+camera.focusDad()        // point camera at opponent
+camera.setFollowLerp(0.04)
+camera.bumpZoom()
+camera.addShader("bloom")
+camera.addShader("chromatic", camera.hud())
+camera.clearShaders()</div>
+
+        <h3>HUD Object — <code>hud.*</code></h3>
+        <div class="code-block">hud.setVisible(false)      // hide entire HUD
+hud.setHealth(1.5)         // set health bar value (0–2)
+hud.getHealth()            // → Float
+hud.addHealth(0.3)         // add/subtract health
+hud.iconP1()               // → health icon sprite (player)
+hud.iconP2()               // → health icon sprite (opponent)
+hud.setScoreVisible(false) // hide score text
+hud.showRating("sick", 142) // display a rating popup</div>
+
+        <h3>Characters — <code>chars.*</code></h3>
+        <div class="code-block">chars.bf()               // → BF Character instance
+chars.dad()              // → opponent Character instance
+chars.gf()               // → GF Character instance
+chars.getBySlot("bf")    // → Character by slot name
+
+// On a character instance:
+var bf = chars.bf();
+bf.playAnim("hey", true) // force play animation
+bf.dance()               // trigger dance cycle
+bf.x = 100
+bf.y = 200
+bf.scale.x = 1.2
+bf.flipX = true
+bf.alpha = 0.5
+bf.color = FlxColor.fromRGB(255, 200, 200)
+bf.visible = false
+bf.stunned = true        // freeze character</div>
+
+        <h3>States — <code>states.*</code></h3>
+        <div class="code-block">states.goto("FreeplayState")             // switch to a named state
+states.open(new MyState())               // switch to a state instance
+states.sticker(new MyState())            // switch with sticker transition
+states.load(new PlayState(song, diff))   // switch via LoadingState
+states.openSubState("MySubState")        // open a scripted substate
+states.close()                           // close current substate
+states.current()                         // → current FlxState</div>
+
+        <h3>Persistent Data — <code>data.*</code></h3>
+        <div class="code-block">data.set("myKey", 42)
+data.get("myKey")            // → 42
+data.get("myKey", 0)         // → 0 if not found (fallback)
+data.has("myKey")            // → Bool
+data.delete("myKey")
+data.save()                  // flush to disk (FlxG.save)</div>
+
+        <h3>Signal Bus — <code>signal.*</code></h3>
+        <div class="code-block">signal.on("myEvent", function(data) {
+    trace("received: " + data);
+});
+
+signal.once("myEvent", function(data) { });  // fire once only
+signal.emit("myEvent", { value: 42 });
+signal.off("myEvent", myCallback);
+signal.clear("myEvent");</div>
+
+        <h3>Events — <code>events.*</code></h3>
+        <div class="code-block">// Fire a chart event immediately (outside timeline)
+events.fire("Camera Follow", "bf");
+events.fire("Add Camera Zoom", "0.015", "0.5");
+
+// Register a handler for a custom event
+events.on("My Custom Event", function(v1, v2, time) {
+    trace("Event fired at beat " + Conductor.curBeat);
+    trace("Values: " + v1 + ", " + v2);
+    return false; // return true to cancel built-in behavior
+});
+
+// List all available event names
+var names = events.list("chart");   // context-filtered
+var all   = events.list();</div>
+
+        <h3>Shaders</h3>
+        <div class="code-block">// Apply a pre-built shader to a sprite
+ShaderManager.applyShader(mySprite, "bloom");
+
+// Apply a shader as a camera filter
+camera.addShader("chromatic");
+camera.addShader("vignette", camera.hud());
+
+// Create an inline shader from GLSL code
+var s = createShader("myWave", "
+    uniform float uTime;
+    void main() {
+        vec2 uv = openfl_TextureCoordv;
+        uv.x += sin(uv.y * 20.0 + uTime * 5.0) * 0.01;
+        gl_FragColor = flixel_texture2D(bitmap, uv);
+    }
+");
+s.applyTo(mySprite);
+
+// Update uniforms each frame
+function onUpdate(elapsed) {
+    s.set("uTime", Conductor.songPosition / 1000.0);
+}
+
+// Cleanup
+s.remove(mySprite);</div>
+
+        <h3>Math Utilities — <code>math.*</code></h3>
+        <div class="code-block">math.lerp(a, b, 0.1)          // linear interpolation
+math.lerpSnap(a, b, 0.1, 1.0) // lerp that snaps when close
+math.clamp(v, 0, 1)
+math.map(v, 0, 100, 0, 1)     // remap range
+math.dist(x1, y1, x2, y2)
+math.angle(x1, y1, x2, y2)    // → degrees
+math.sin(degrees)              // trig in degrees (not radians)
+math.cos(degrees)
+math.rnd(1, 10)                // random Int
+math.rndf(0.0, 1.0)           // random Float
+math.chance(0.25)              // 25% chance → Bool
+math.bezier(t, p0, p1, p2, p3)
+math.pingpong(time, 1.0)
+math.snap(v, 0.5)              // snap to grid
+math.PI / math.TAU / math.E</div>
+
+        <h3>Array Helpers — <code>arr.*</code></h3>
+        <div class="code-block">arr.find([1,2,3], function(x) return x > 1)  // → 2
+arr.filter([1,2,3], function(x) return x > 1) // → [2, 3]
+arr.map([1,2,3], function(x) return x * 2)    // → [2, 4, 6]
+arr.some([1,2,3], function(x) return x > 2)   // → true
+arr.every([1,2,3], function(x) return x > 0)  // → true
+arr.shuffle([1,2,3,4,5])                       // → shuffled copy
+arr.pick([1,2,3])                              // → random element</div>
+
+        <h3>ModChart — <code>ModChartManager.*</code></h3>
+        <div class="code-block">// ModChart lets you move/rotate/scale strumlines over time
+// Schedule a modifier event at a specific beat
+ModChartManager.addEvent({
+    beat: 16.0,
+    target: "player",        // "player", "opponent", or note index
+    type: ModEventType.MOVE_X,
+    value: 50.0,
+    duration: 1.0,           // in beats
+    ease: ModEase.SINE_OUT
+});
+
+// Direct instant modifier (no easing)
+ModChartManager.addEvent({
+    beat: 0.0,
+    target: "player",
+    type: ModEventType.ANGLE,
+    value: 15.0,
+    duration: 0.0,
+    ease: ModEase.INSTANT
+});
+
+// Reset all modifiers
+ModChartManager.clearAll();</div>
+
+        <h3>Defining Custom Classes (HScript)</h3>
+        <div class="code-block teal">// Define a reusable component with prototype pattern
+defineClass("BouncySprite", {
+    "new": function(x, y, imagePath) {
+        var spr = new FunkinSprite(x, y);
+        spr.loadSparrow(imagePath);
+        spr.addAnim("idle", "idle", 24, true);
+        spr.playAnim("idle");
+        var self = { spr: spr, timer: 0.0 };
+        self.update = function(elapsed) {
+            self.timer += elapsed;
+            self.spr.y = y + Math.sin(self.timer * 5) * 8;
+        };
+        return self;
+    }
+});
+
+// Instantiate it
+var bounce = newClass("BouncySprite", 200, 300, "images/mySprite");
+add(bounce.spr);
+
+function onUpdate(elapsed) {
+    bounce.update(elapsed);
+}</div>
+      </section>
+
+<section class="section" id="lua-guide">
+        <div class="section-header">
+          <div class="section-icon">🌙</div>
+          <div>
+            <div class="section-title">Lua — Full Function Reference</div>
+            <div class="section-sub">All registered functions available in .lua scripts</div>
+          </div>
+        </div>
+
+        <p>Lua scripts work the same as in Psych Engine but with a much larger API. They are detected automatically by file extension and loaded from the same folder paths as HScript files.</p>
+
+        <h3>Object Registry</h3>
+        <div class="code-block yellow">-- Create a Lua-managed object reference
+local id = newObject("FlxSprite", 100, 200)    -- class name + constructor args
+local id = makeFunkinSprite(100, 200)          -- shorthand for FunkinSprite
+local id = makeSprite(100, 200)                -- blank sprite
+
+-- Get/set properties on any object
+getProp(id, "x")               -- returns value
+setProp(id, "x", 150)          -- sets value
+setProp(id, "alpha", 0.5)
+
+-- Call a method
+callMethod(id, "playAnim", "idle", true)
+
+-- Destroy
+destroyObject(id)</div>
+
+        <h3>Sprites</h3>
+        <div class="code-block yellow">local spr = makeFunkinSprite(100, 200)
+loadSparrow(spr, "images/mySprite")          -- PNG + XML
+loadAtlas(spr, "images/myAtlas")             -- Adobe Animate folder
+loadGraphic(spr, "images/myPng")             -- static PNG
+
+addAnim(spr, "idle", "idle anim", 24, true)  -- name, prefix, fps, loop
+addAnimOffset(spr, "idle", -10, 5)           -- offset x, y
+playAnim(spr, "idle")
+playAnim(spr, "idle", true)                  -- force restart
+stopAnim(spr)
+
+addSprite(spr)                               -- add to PlayState
+addToState(spr)                              -- same as addSprite
+addToGroup(spr, "grpStage")                  -- add to a named group
+removeSprite(spr)
+
+setSpriteScale(spr, 1.5)                     -- uniform scale
+setSpriteScale(spr, 1.0, 1.5)               -- x, y
+setSpriteFlip(spr, true, false)             -- flipX, flipY
+setSpriteAlpha(spr, 0.8)
+setSpriteColor(spr, colorRGB(255, 100, 100))
+setSpritePosition(spr, 300, 400)
+setSpriteScrollFactor(spr, 0.8, 0.8)        -- parallax
+setAntialiasing(spr, true)
+screenCenter(spr)
+screenCenter(spr, "x")                       -- center on axis only ("x" or "y")</div>
+
+        <h3>Text</h3>
+        <div class="code-block yellow">local txt = makeText(10, 10, 400, "Hello World!", 20)
+setText(txt, "Updated text")
+setTextSize(txt, 24)
+setTextFont(txt, "vcr.ttf")
+setTextBold(txt, true)
+setTextItalic(txt, false)
+setTextAlign(txt, "center")                  -- "left", "center", "right"
+setTextColor(txt, colorHex("FF3C78"))
+setTextBorder(txt, "outline", 2)             -- style, size
+setTextShadow(txt, 2, 2, colorRGB(0,0,0))
+getText(txt)                                 -- → current text string
+addSprite(txt)</div>
+
+        <h3>Camera</h3>
+        <div class="code-block yellow">setCamZoom(0.9)
+setCamZoomTween(0.9, 0.5, "sineOut")      -- target, duration, ease
+cameraFlash(id, "WHITE", 0.3)             -- camHandle, color, duration
+cameraShake(id, 0.03, 0.2)
+cameraFade(id, "BLACK", 1.0)
+cameraPan(id, 100, 0, 0.5, "linear")     -- cam, dx, dy, dur, ease
+cameraSnapTo(id, 400, 300)               -- snap camera to world position
+
+local camID = getCamHandle("game")       -- "game", "hud", "other"
+local newCam = makeCam()                 -- create new camera</div>
+
+        <h3>Tweens</h3>
+        <div class="code-block yellow">tweenProp(spr, "x", 500, 1.0, "sineOut")   -- object, field, target, dur, ease
+tween(spr, "alpha", 0, 0.5, "linear")      -- alias for tweenProp
+tweenColor(spr, 0.5, "FFFFFF", "FF3C78")   -- obj, dur, fromHex, toHex
+tweenAngle(spr, 360, 1.0, "quadOut")
+tweenPosition(spr, 300, 400, 0.8, "sineInOut")
+tweenAlpha(spr, 0.0, 0.5, "linear")
+tweenScale(spr, 1.5, 0.5, "elasticOut")
+tweenNumTween(0, 100, 1.0, "quadIn", function(v)
+    trace("value: " .. tostring(v))
+end)
+
+local id = tweenProp(spr, "x", 500, 1.0)
+tweenCancel(id)</div>
+
+        <h3>Timers</h3>
+        <div class="code-block yellow">local t = timer(2.0, function()
+    trace("fired after 2 seconds")
+end)
+
+-- Repeating timer (loops parameter)
+local t = timer(0.5, function()
+    trace("fires every 0.5s")
+end, 0)  -- 0 = infinite loops
+
+timerCancel(t)</div>
+
+        <h3>Gameplay</h3>
+        <div class="code-block yellow">-- Score / health
+addScore(100)         setScore(0)         getScore()
+addHealth(0.2)        setHealth(1.0)      getHealth()   -- 0–2
+setMisses(0)          getMisses()
+setCombo(0)           getCombo()
+
+-- Song control
+endSong()
+gameOver()
+pauseGame()
+resumeGame()
+
+-- Song info
+getBeat()     getStep()     getBPM()     getSongPos()
+getSongName()     getSongArtist()
+getDifficulty()   isStoryMode()
+getAccuracy()     getSicks()    getGoods()    getBads()    getShits()
+
+-- Note appearance
+setScrollSpeed(1.5)         getScrollSpeed()
+setNoteAlpha(noteID, 0.5)
+setNoteColor(noteID, colorRGB(255, 100, 100))
+skipNote(noteID)
+setNoteSkin("pixel")</div>
+
+        <h3>Characters (Lua)</h3>
+        <div class="code-block yellow">-- Get a character handle
+local bfID = getCharHandle("bf")      -- "bf", "dad", "gf"
+
+-- Animations
+triggerAnim("bf", "hey", true)        -- charName, anim, force
+characterDance("bf")
+getCharAnim("bf")                     -- → animation name string
+isAnimFinished("bf")                  -- → bool
+
+-- Transform
+setCharPos("bf", 300, 400)
+setCharX("bf", 300)           setCharY("bf", 400)
+setCharScale("bf", 1.2)
+setCharAlpha("bf", 0.8)
+setCharColor("bf", colorRGB(255,200,200))
+setCharAngle("bf", 15)
+setCharFlip("bf", false, false)
+setCharVisible("bf", true)
+setCharScrollFactor("bf", 1.0, 1.0)
+setCharPlaybackRate("bf", 1.5)
+lockCharacter("bf", true)             -- freeze in place
+
+-- Swap characters mid-song
+setBF("newBoyfriend")
+setDAD("newDad")
+setGF("newGF")</div>
+
+        <h3>Notes (Lua)</h3>
+        <div class="code-block yellow">-- Spawn a note at a specific time
+local noteID = spawnNote(3000, 0, 0, "normal")
+--                        ms,  dir, holdLen, type
+
+-- Iterate over all active notes
+forEachNote(function(noteID)
+    local dir  = getNoteDir(noteID)
+    local time = getNoteTime(noteID)
+    setNoteAlpha(noteID, 0.5)
+end)</div>
+
+        <h3>ModChart (Lua)</h3>
+        <div class="code-block yellow">-- Apply a modifier immediately (instant)
+setModifier("player", "moveX", 50)
+setModifier("opponent", "angle", 15)
+setModifier("player", "alpha", 0.8)
+setModifier("player", "scaleX", 1.5)
+
+-- Read a modifier value
+local val = getModifier("player", "moveX")
+
+-- Reset all
+clearModifiers()</div>
+
+        <h3>Audio (Lua)</h3>
+        <div class="code-block yellow">playMusic("music/myTrack")
+playMusic("music/myTrack", 0.8)       -- with volume
+stopMusic()
+pauseMusic()
+resumeMusic()
+playSound("sounds/hit")
+playSound("sounds/hit", 0.6)
+
+getMusicPos()                          -- → ms
+setMusicPos(5000)                      -- seek to 5 seconds
+setMusicPitch(1.25)                    -- pitch shift</div>
+
+        <h3>Events (Lua)</h3>
+        <div class="code-block yellow">-- Trigger a chart event immediately
+triggerEvent("Camera Follow", "bf")
+triggerEvent("Add Camera Zoom", "0.015", "0.5")
+
+-- Register a custom event handler
+registerEvent("My Event", function(v1, v2, time)
+    trace("My event fired: " .. v1)
+end)
+
+-- Register a new event definition (shows in Chart Editor)
+registerEventDef({
+    name        = "My Event",
+    description = "Does something cool",
+    color       = "FF3C78",
+    params = {
+        { name = "Target", type = "string", default = "bf" },
+        { name = "Intensity", type = "float", default = "1.0" }
+    }
+})
+
+-- List events
+local list = listEvents("chart")</div>
+
+        <h3>Input (Lua)</h3>
+        <div class="code-block yellow">keyPressed("SPACE")          -- is SPACE held?
+keyJustPressed("Z")          -- just pressed this frame?
+keyJustReleased("Z")         -- just released?
+
+mouseX()    mouseY()
+mousePressed()               -- left button held
+mouseJustPressed()           -- just clicked</div>
+
+        <h3>Script Communication (Lua)</h3>
+        <div class="code-block yellow">-- Shared data between scripts
+setShared("myKey", 42)
+local v = getShared("myKey", 0)     -- 0 = default if missing
+deleteShared("myKey")
+
+-- Broadcast an event to all active scripts
+broadcast("onCustomEvent", arg1, arg2)
+
+-- Call a function on all scripts by name
+callOnScripts("myFunction", arg1)
+
+-- Get/set variables in other scripts
+setScriptVar("otherScript", "myVar", 100)
+local v = getScriptVar("otherScript", "myVar")</div>
+
+        <h3>Utils (Lua)</h3>
+        <div class="code-block yellow">-- Math
+lerp(a, b, 0.1)
+clamp(v, 0, 100)
+randomInt(1, 10)
+randomFloat(0.0, 1.0)
+
+-- Colors
+colorRGB(255, 100, 100)       -- → int color
+colorRGBA(255, 100, 100, 200) -- → int color with alpha
+colorHex("FF3C78")            -- → int from hex string
+
+-- Paths
+getProperty("gf.x")          -- Psych-style path access
+setProperty("gf.x", 100)
+getPropertyOf(sprID, "x")
+setPropertyOf(sprID, "alpha", 0.5)
+
+-- File I/O (desktop only)
+fileExists("mods/myMod/data/x.json")
+fileRead("mods/myMod/data/x.json")
+fileWrite("mods/myMod/data/out.txt", "data")
+
+-- Logging
+log("My message")
+trace("Also works")</div>
+      </section>
+
+<section class="section" id="custom-states">
+        <div class="section-header">
+          <div class="section-icon">🏗️</div>
+          <div>
+            <div class="section-title">Creating States from Scratch</div>
+            <div class="section-sub">StateScript — custom screens, menus &amp; substates</div>
+          </div>
+        </div>
+
+        <p>You can build entirely new screens (states) using HScript without writing Haxe. Place a <code>.hx</code> file in <code>mods/{mod}/states/{StateName}/</code> and navigate to it with <code>states.goto("StateName")</code>.</p>
+
+        <h3>Minimal state example</h3>
+        <div class="code-block teal">// mods/my-mod/states/MyState/script.hx
+
+class MyState extends StateScript {
+    var bg: FlxSprite;
+    var label: FlxText;
+
+    override function onCreate() {
+        // Black background
+        bg = new FlxSprite(0, 0);
+        bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.fromRGB(10, 10, 20));
+        addSprite(bg);
+
+        // Title text
+        label = createText(0, 100, FlxG.width, "MY CUSTOM STATE", 48);
+        label.alignment = "center";
+        label.color = FlxColor.fromRGB(255, 60, 120);
+        addSprite(label);
+    }
+
+    override function onUpdate(elapsed: Float) {
+        // Pulse the label
+        label.alpha = 0.5 + 0.5 * Math.sin(FlxG.game.ticks / 300);
+    }
+
+    // ESC goes back to main menu
+    override function onBack(): Bool {
+        states.goto("MainMenuState");
+        return true; // cancel default behavior
+    }
+}</div>
+
+        <h3>State with animated sprite &amp; sounds</h3>
+        <div class="code-block teal">class IntroState extends StateScript {
+    var char: Dynamic;
+
+    override function onCreate() {
+        var spr = new FunkinSprite(300, 200);
+        spr.loadSparrow("images/characters/bf/BF_assets");
+        spr.addAnim("idle", "BF idle dance", 24, true);
+        spr.playAnim("idle");
+        spr.screenCenter();
+        addSprite(spr);
+        char = spr;
+
+        FlxG.sound.play(Paths.sound("confirmMenu"));
+    }
+
+    override function onBeatHit(beat: Int) {
+        if (beat % 2 == 0) char.playAnim("idle", true);
+    }
+
+    override function onAccept(): Bool {
+        FlxG.sound.play(Paths.sound("confirmMenu"));
+        states.sticker(new funkin.gameplay.PlayState());
+        return true;
+    }
+}</div>
+
+        <h3>Scripted SubState</h3>
+        <div class="code-block teal">// Open a scripted substate over the current state
+// File: mods/my-mod/states/MyPopup/popup.hx
+
+class MyPopup extends StateScript {
+    override function onCreate() {
+        // Semi-transparent overlay
+        var overlay = new FlxSprite(0, 0);
+        overlay.makeGraphic(FlxG.width, FlxG.height, FlxColor.fromRGBFloat(0,0,0,0.6));
+        addSprite(overlay);
+
+        var txt = createText(0, FlxG.height/2 - 30, FlxG.width, "Press ENTER to continue", 28);
+        txt.alignment = "center";
+        addSprite(txt);
+    }
+
+    override function onAccept(): Bool {
+        states.close();
+        return true;
+    }
+
+    override function onBack(): Bool {
+        states.close();
+        return true;
+    }
+}
+
+// To open it from another script:
+// states.openSubState("MyPopup")</div>
+
+        <h3>Available helpers inside StateScript</h3>
+        <div class="code-block">// In any StateScript method:
+addSprite(spr)            // add to state
+removeSprite(spr)         // remove from state
+createText(x, y, w, txt, size)   // → FlxText (not yet added)
+
+getVar("fieldName")       // read any field on the state
+setVar("fieldName", val)  // write any field on the state
+callMethod("method", [arg1, arg2])  // call any method on the state
+
+// Sound / music (same as Lua)
+FlxG.sound.play(Paths.sound("confirm"))
+FlxG.sound.playMusic(Paths.music("menu"))
+FlxG.sound.music.stop()</div>
+      </section>
+
+      <section class="section" id="char-scripts">
+        <div class="section-header">
+          <div class="section-icon">🕺</div>
+          <div>
+            <div class="section-title">Character Scripts</div>
+            <div class="section-sub">CharacterScript — customize characters without editing JSON</div>
+          </div>
+        </div>
+
+        <p>Place a script at <code>mods/{mod}/characters/scripts/{charName}/script.hx</code>. The engine injects <code>character</code> (the Character instance) and <code>game</code> (PlayState) automatically.</p>
+
+        <div class="code-block teal">// mods/my-mod/characters/scripts/bf/script.hx
+
+function onCreate() {
+    // Scale up BF a little
+    character.scale.set(1.05, 1.05);
+    character.updateHitbox();
+    log("BF script ready!");
+}
+
+function onDance() {
+    // Extra bounce on health above 50%
+    if (game != null && game.health > 1.0) {
+        FlxTween.tween(character.scale, {x: 1.12, y: 0.9}, 0.05, {
+            ease: FlxEase.sineOut,
+            onComplete: function(_) {
+                FlxTween.tween(character.scale, {x: 1.05, y: 1.05}, 0.15, {ease: FlxEase.elasticOut});
+            }
+        });
+    }
+}
+
+function onBeatHit(beat) {
+    if (beat % 8 == 0) {
+        // Flash color briefly
+        character.color = FlxColor.fromRGB(255, 200, 200);
+        timer(0.15, function() { character.color = FlxColor.WHITE; });
+    }
+}
+
+function onSingStart(direction, anim) {
+    log("BF singing direction: " + direction);
+}
+
+// Return true to cancel the engine's default idle → dance transition
+function onDanceEnd(): Bool {
+    return false;
+}</div>
+
+        <h3>All CharacterScript callbacks</h3>
+        <table>
+          <thead><tr><th>Callback</th><th>When it fires</th></tr></thead>
+          <tbody>
+            <tr><td>onCreate()</td><td>Character fully initialized</td></tr>
+            <tr><td>onDance()</td><td>Dance animation triggered</td></tr>
+            <tr><td>onDanceEnd() → Bool</td><td>Dance animation ended. Return true to skip default transition</td></tr>
+            <tr><td>onSingStart(dir, anim)</td><td>Character begins singing (note hit)</td></tr>
+            <tr><td>onSingEnd(dir, anim)</td><td>Character finishes singing (hold released)</td></tr>
+            <tr><td>onBeatHit(beat)</td><td>Every musical beat</td></tr>
+            <tr><td>onStepHit(step)</td><td>Every musical step</td></tr>
+            <tr><td>onUpdate(elapsed)</td><td>Every game frame</td></tr>
+            <tr><td>onDestroy()</td><td>Character removed/destroyed</td></tr>
+            <tr><td>onAnimFinished(anim)</td><td>Any animation completes</td></tr>
+            <tr><td>onMiss(dir)</td><td>Player missed a note on this character's side</td></tr>
+            <tr><td>onGameOver()</td><td>Health reached 0</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Cutscene Script -->
+      <section class="section" id="cutscene-scripts">
+        <div class="section-header">
+          <div class="section-icon">🎬</div>
+          <div>
+            <div class="section-title">Cutscene Scripting</div>
+            <div class="section-sub">SpriteCutscene JSON + Lua cutscene builder</div>
+          </div>
+        </div>
+
+        <p>Cutscenes can be defined as JSON or built dynamically in Lua/HScript. Place them in <code>mods/{mod}/videos/</code> or trigger them from a song script.</p>
+
+        <h3>SpriteCutscene JSON Format</h3>
+        <div class="code-block yellow">// mods/my-mod/data/cutscenes/myIntro.json
+{
+  "skippable": true,
+  "sprites": [
+    {
+      "id": "bg",
+      "image": "images/cutscenes/myBg",
+      "x": 0, "y": 0,
+      "scrollX": 1.0, "scrollY": 1.0,
+      "depth": 0
+    },
+    {
+      "id": "char",
+      "image": "images/characters/dad/Dad_assets",
+      "atlas": "sparrow",
+      "x": 400, "y": 100,
+      "depth": 1
+    }
+  ],
+  "timeline": [
+    { "time": 0,    "action": "playAnim",  "target": "char", "anim": "idle", "loop": true },
+    { "time": 0.5,  "action": "sound",     "file": "sounds/cutscene_start" },
+    { "time": 1.0,  "action": "tweenX",    "target": "char", "to": 500, "duration": 0.8, "ease": "sineOut" },
+    { "time": 2.0,  "action": "subtitle",  "text": "You ready for this?", "duration": 2.0 },
+    { "time": 4.0,  "action": "cameraZoom","to": 1.2, "duration": 0.5 },
+    { "time": 5.0,  "action": "end" }
+  ]
+}</div>
+
+        <h3>Triggering cutscenes from scripts</h3>
+        <div class="code-block teal">// In a song HScript or Lua script
+
+// Trigger a sprite cutscene by name (before song)
+function onSongStart() {
+    // Note: normally done via meta.json, but can be forced:
+    VideoManager.playCutscene("myIntro", function() {
+        // Called when cutscene finishes
+        game.resumeSong();
+    });
+}
+
+// Play a video file
+function onSongStart() {
+    VideoManager.playVideo("cutscene.mp4", function() {
+        game.startCountdown();
+    });
+}</div>
+
+        <h3>Lua cutscene builder API</h3>
+        <div class="code-block yellow">-- Build a cutscene in Lua
+function onCountdownStart()
+    local cut = newCutscene()
+    cutsceneSkippable(cut, true)
+
+    local sprID = cutsceneDefineSprite(cut, {
+        image = "images/cutscenes/dadAnim",
+        atlas = "sparrow",
+        x = 400, y = 100
+    })
+
+    cutsceneAdd(cut, 0.0, "playAnim", sprID, "idle", true)
+    cutscenePlaySound(cut, 0.5, "sounds/cutscene_intro")
+    cutsceneWait(cut, 1.5)
+    cutsceneCameraZoom(cut, 1.2, 0.5, "sineOut")
+    cutsceneAdd(cut, 3.0, "end")
+
+    cutscenePlay(cut)
+end</div>
+      </section>
+
+      <!-- Dialogue -->
+      <section class="section" id="dialogue-scripts">
+        <div class="section-header">
+          <div class="section-icon">💬</div>
+          <div>
+            <div class="section-title">Dialogue System</div>
+            <div class="section-sub">DialogueData JSON format</div>
+          </div>
+        </div>
+
+        <p>Dialogue is defined in JSON and loaded by <code>DialogueBoxImproved</code>. Place files in <code>assets/data/dialogue/</code> or <code>mods/{mod}/data/dialogue/</code>.</p>
+
+        <div class="code-block teal">// assets/data/dialogue/week1/intro.json
+{
+  "characters": {
+    "bf":  { "portrait": "images/ui/dialogue/bf",  "side": "right" },
+    "dad": { "portrait": "images/ui/dialogue/dad", "side": "left"  }
+  },
+  "lines": [
+    {
+      "character": "dad",
+      "text": "You ready to go, kid?",
+      "expression": "normal",
+      "sound": "sounds/dialogue/grunt"
+    },
+    {
+      "character": "bf",
+      "text": "Yeah! Let's do it!",
+      "expression": "happy"
+    },
+    {
+      "character": "dad",
+      "text": "Don't disappoint me.",
+      "expression": "serious",
+      "sound": "sounds/dialogue/hmm"
+    }
+  ]
+}
+
+// Trigger from a song script or cutscene:
+// game.startDialogue("week1/intro")
+// or from Lua:
+// startDialogue("week1/intro")</div>
+      </section>
+
+      <!-- Note Type scripting -->
+      <section class="section" id="note-types">
+        <div class="section-header">
+          <div class="section-icon">♪</div>
+          <div>
+            <div class="section-title">Custom Note Types</div>
+            <div class="section-sub">NoteTypeManager — register new note behaviors</div>
+          </div>
+        </div>
+
+        <p>Custom note types let you define notes that trigger special behavior on hit, miss, or hold. Register them from a global script that loads early.</p>
+
+        <div class="code-block teal">// In a global HScript (assets/data/scripts/global/myNoteTypes.hx)
+
+// Register a "mine" note type that damages the player on hit
+noteTypes.register("mine", {
+    onHit: function(note) {
+        // Damage player when hitting a mine
+        hud.addHealth(-0.3);
+        camera.shake(0.04, 0.3);
+        FlxG.sound.play(Paths.sound("explosion"));
+        return true; // return true to cancel normal hit behavior
+    },
+    onMiss: function(note) {
+        // Missing a mine is fine — no penalty
+        return true; // cancel normal miss behavior
+    },
+    color: FlxColor.fromRGB(200, 50, 50),
+    hurtNote: true
+});
+
+// Register a "ghost" note — invisible but still hittable
+noteTypes.register("ghost", {
+    onCreate: function(note) {
+        note.alpha = 0.0; // invisible
+    },
+    onHit: function(note) {
+        // Bonus points for hitting blind
+        score.addScore(500);
+        return false; // keep normal hit behavior
+    }
+});
+</div>
+
+        <div class="info-block">
+          <div class="info-label teal">// REGISTERING FROM LUA</div>
+          In Lua, use the global <code>registerEvent()</code> and <code>registerEventDef()</code> to register custom event types and handlers. Note types can also be registered from Lua via <code>noteTypes.register()</code> — the same API applies.
+        </div>
+      </section>
+
+
+
+      <!-- CALLBACKS & CANCEL -->
+      <section class="section" id="scripting-callbacks">
+        <div class="section-header">
+          <div class="section-icon">🔔</div>
+          <div>
+            <div class="section-title">Callbacks &amp; Cancelling Logic</div>
+            <div class="section-sub">Automatically called functions — HScript &amp; Lua</div>
+          </div>
+        </div>
+
+        <p>Define these functions in your script and the engine will call them automatically at the right moment.</p>
+
+        <h3>Lifecycle — all states</h3>
+        <div class="code-block teal">function onCreate()            { }   // when the state is created
+function onUpdate(elapsed)     { }   // every frame, before update
+function onUpdatePost(elapsed) { }   // every frame, after update
+function onBeatHit(beat)       { }   // every beat (4 per measure)
+function onStepHit(step)       { }   // every step (16 per measure)
+function onDestroy()           { }   // when the state is destroyed</div>
+
+        <h3>PlayState only</h3>
+        <div class="code-block teal">function onSongStart()         { }
+function onSongEnd()           { }
+function onCountdownStarted()  { }
+function onSectionHit(section) { }
+function onRestart()           { }
+function onResume()            { }
+
+// note = Note object, rating = "sick" / "good" / "bad" / "shit"
+function onNoteHit(note, rating)     { }
+function onNoteHitPost(note, rating) { }
+function onMiss(note, _)         { }
+function onMissPost(direction)   { }
+function onOpponentNoteHit(note, _)        { }
+function onCharacterSing(charId, noteData) { }
+
+// Cancellable — return true to cancel (see table below)
+function onPause()    { }
+function onGameOver() { }</div>
+
+        <h3>Cancellable callbacks</h3>
+        <table>
+          <thead><tr><th>Callback</th><th>What gets cancelled when returning true</th></tr></thead>
+          <tbody>
+            <tr><td>onNoteHit</td><td>Score, rating, health gain, confirm animation</td></tr>
+            <tr><td>onMiss</td><td>Health loss, miss counter increment</td></tr>
+            <tr><td>onPause</td><td>Opening the pause menu</td></tr>
+            <tr><td>onGameOver</td><td>Game over screen</td></tr>
+            <tr><td>onCountdownStarted</td><td>The countdown</td></tr>
+          </tbody>
+        </table>
+
+        <h3>HScript — cancel with return true</h3>
+        <div class="code-block teal">function onNoteHit(note, rating) {
+    if (note.noteType == 'mine') {
+        game.gameState.health -= 0.3;
+        return true; // cancels score, animation, normal logic
+    }
+    // returning nothing = does not cancel
+}
+
+function onPause() {
+    if (game.isBossSequence)
+        return cancelEvent();  // helper equivalent to return true
+    return continueEvent();    // helper equivalent to return false
+}
+
+// Note data available in callbacks
+function onNoteHit(note, rating) {
+    trace(note.noteData);       // 0=left 1=down 2=up 3=right
+    trace(note.strumTime);      // time in ms
+    trace(note.noteType);       // note type string
+    trace(note.isSustainNote);  // true if hold piece
+    trace(note.sustainLength);  // hold duration in ms
+    trace(rating);              // "sick", "good", "bad", "shit"
+}</div>
+
+        <h3>Lua — cancelling</h3>
+        <div class="code-block yellow">function onNoteHit(note)
+    if game.bossMode then
+        return false  -- before() / cancellable: return false to cancel
+    end
+end
+
+function onMiss(note)
+    game.health = game.health - 0.05  -- custom penalty via OOP
+    return false  -- cancel engine default penalty
+end</div>
+
+        <div class="info-block warn">
+          <div class="info-label yellow">// LUA</div>
+          In RuleScript (Lua), use <code>return false</code> from a <code>before()</code> hook to cancel the original, or just <code>return false</code> from any gameplay callback.
+        </div>
+      </section>
+
+      <!-- OVERRIDES -->
+      <section class="section" id="scripting-overrides">
+        <div class="section-header">
+          <div class="section-icon">⚙️</div>
+          <div>
+            <div class="section-title">Overrides</div>
+            <div class="section-sub">Replace engine functions entirely — HScript only</div>
+          </div>
+        </div>
+
+        <p>Overrides <strong>replace</strong> the engine code completely. Key difference: callbacks run <em>in addition to</em> the engine; overrides <em>replace</em> the engine logic.</p>
+
+        <div class="info-block">
+          <div class="info-label teal">// CALLBACK VS OVERRIDE</div>
+          Use <strong>callbacks</strong> when you want to add extra behavior on top of the engine's.<br>
+          Use <strong>overrides</strong> when you want to fully replace the engine's logic with your own.
+        </div>
+
+        <h3>Override API</h3>
+        <div class="code-block teal">// Fully replace the player hit logic
+overrideFunction('onNoteHit', function(note, rating) {
+    // The engine NO LONGER runs its hit logic. You control everything.
+    game.gameState.score += 500;
+    trace('rating: ' + rating);
+});
+
+// Restore the engine's original behavior
+removeOverride('onNoteHit');
+
+// Temporarily disable without deleting
+toggleOverride('onNoteHit', false);
+toggleOverride('onNoteHit', true);
+
+// Check if an override is currently active
+if (hasOverride('onNoteHit')) {
+    trace('override is active');
+}</div>
+
+        <h3>Example — fully custom scoring</h3>
+        <div class="code-block teal">overrideFunction('onNoteHit', function(note, rating) {
+    var pts = switch(rating) {
+        case 'sick':  350;
+        case 'good':  200;
+        case 'bad':   100;
+        default:      50;
+    };
+    game.gameState.score += pts;
+    // Add your own animations, sounds, etc.
+});
+
+// Replace the miss animation
+overrideFunction('onMiss', function(note, _) {
+    game.gameState.health -= 0.08;
+    bf.playAnim('hurt', true);
+});</div>
+
+        <div class="info-block warn">
+          <div class="info-label yellow">// LUA DOES NOT SUPPORT OVERRIDES</div>
+          Lua has no <code>overrideFunction</code>. To replace engine logic from Lua, use the normal callback with <code>return true</code> to cancel the engine and add your own logic before the return.
+        </div>
+      </section>
+
+      <!-- CUSTOM STATES -->
+      <section class="section" id="scripting-states">
+        <div class="section-header">
+          <div class="section-icon">🖥️</div>
+          <div>
+            <div class="section-title">Custom States in Script</div>
+            <div class="section-sub">ScriptableState &amp; ScriptableSubState — HScript only</div>
+          </div>
+        </div>
+
+        <p>Create full screens and menus entirely from HScript, without touching any Haxe code.</p>
+
+        <h3>Folder structure</h3>
+        <div class="code-block">assets/states/mystate/
+    main.hx        ← main script
+    helper.hx      ← additional scripts (optional)</div>
+
+        <h3>Navigating to the state</h3>
+        <div class="code-block teal">// From Haxe
+StateTransition.switchState(new funkin.scripting.ScriptableState('mystate'));
+
+// From another HScript or RuleScript
+switchStateInstance(new funkin.scripting.ScriptableState('mystate'));
+stickerSwitch(new funkin.scripting.ScriptableState('mystate'));</div>
+
+        <h3>Example — full selection menu</h3>
+        <div class="code-block teal">// assets/states/myselectscreen/main.hx
+var bg:FlxSprite;
+var options = [];
+var cursor = 0;
+
+function onCreate() {
+    bg = new FlxSprite(0, 0);
+    bg.makeGraphic(FlxG.width, FlxG.height, 0xFF000000);
+    add(bg);
+
+    var title = new FlxText(0, 60, FlxG.width, "MY MENU", 52);
+    title.setFormat(Paths.font("vcr.ttf"), 52, 0xFFFFFFFF, "center");
+    title.alpha = 0;
+    add(title);
+    FlxTween.tween(title, {alpha: 1}, 0.4, {ease: FlxEase.quadOut});
+
+    var labels = ["Play", "Options", "Back"];
+    for (i in 0...labels.length) {
+        var opt = new FlxText(200, 200 + i * 70, 400, labels[i], 36);
+        add(opt);
+        options.push(opt);
+    }
+    _updateCursor();
+}
+
+function onUpdate(elapsed) {
+    if (FlxG.keys.justPressed.DOWN) {
+        cursor = (cursor + 1) % options.length;
+        _updateCursor();
+        FlxG.sound.play(Paths.sound('menus/scrollMenu'));
+    }
+    if (FlxG.keys.justPressed.UP) {
+        cursor = (cursor - 1 + options.length) % options.length;
+        _updateCursor();
+    }
+    if (FlxG.keys.justPressed.ENTER) _select();
+    if (FlxG.keys.justPressed.ESCAPE) switchState('MainMenuState');
+}
+
+function onBeatHit(beat) { zoomCamera(1.03, 0.1); }
+function onDestroy() { options = []; }
+
+function _updateCursor() {
+    for (i in 0...options.length)
+        options[i].color = i == cursor ? 0xFFFFFF00 : 0xFFFFFFFF;
+}
+
+function _select() {
+    switch (cursor) {
+        case 0: switchState('FreeplayState');
+        case 1: switchState('OptionsMenuState');
+        case 2: switchState('MainMenuState');
+    }
+}</div>
+
+        <h3>ScriptableSubState — popups</h3>
+        <div class="code-block teal">// Open a scripted substate from another script
+FlxG.state.openSubState(new funkin.scripting.ScriptableState('confirmpopup'));</div>
+
+        <div class="code-block teal">// assets/states/confirmpopup/main.hx — confirmation popup
+var onYes;
+
+function onCreate() {
+    // Receive a callback from the parent state via shared data
+    onYes = getShared('confirmCallback');
+
+    var overlay = new FlxSprite(0, 0);
+    overlay.makeGraphic(FlxG.width, FlxG.height, 0xAA000000);
+    add(overlay);
+
+    var msg = new FlxText(0, FlxG.height / 2 - 20, FlxG.width, "Are you sure?", 28);
+    msg.alignment = "center";
+    add(msg);
+}
+
+function onKeyJustPressed(key) {
+    if (FlxG.keys.justPressed.ENTER) {
+        if (onYes != null) onYes();
+        state.closeSubState();
+    }
+    if (FlxG.keys.justPressed.ESCAPE) state.closeSubState();
+}
+
+// ── In the parent state, set the callback before opening: ─────────
+// setShared('confirmCallback', function() { trace('confirmed!'); });
+// FlxG.state.openSubState(new funkin.scripting.ScriptableState('confirmpopup'));</div>
+      </section>
+
+      <!-- UI API -->
+      <section class="section" id="scripting-ui-api">
+        <div class="section-header">
+          <div class="section-icon">🎨</div>
+          <div>
+            <div class="section-title">The <code>ui</code> API</div>
+            <div class="section-sub">Only available inside ScriptableState and ScriptableSubState</div>
+          </div>
+        </div>
+
+        <h3>Creating objects</h3>
+        <div class="code-block teal">// HScript — identical to writing a real FlxState in Haxe
+var spr  = new FlxSprite(x, y);
+var spr2 = new FlxSprite(x, y); spr2.loadGraphic(Paths.image('img/path'));
+var box  = new FlxSprite(x, y); box.makeGraphic(w, h, 0xFFAA0000);
+var txt  = new FlxText(x, y, 0, 'Hello', 24);
+var txt2 = new FlxText(x, y, 0, 'Hello', 24); txt2.font = Paths.font('vcr.ttf');
+var grp  = new FlxSpriteGroup();
+var grp2 = new FlxGroup();</div>
+
+        <h3>Display list</h3>
+        <div class="code-block teal">add(spr);
+remove(spr);
+insert(pos, spr);  // specific position in display list</div>
+
+        <h3>Tweens &amp; timers</h3>
+        <div class="code-block teal">FlxTween.tween(spr, {alpha: 0}, 0.5);
+FlxTween.tween(spr, {y: 100}, 0.3, {ease: FlxEase.quadOut});
+FlxTween.tween(spr, {alpha: 0}, 1.0, {
+    ease: 'expoIn',
+    delay: 0.5,
+    onComplete: function(_) { trace('done'); }
+});
+cancelTweens(spr);
+
+timer(1.5, function(t) { trace('tick'); });
+interval(0.5, function(t) { }, 5);  // 5 repetitions</div>
+
+        <h3>Camera</h3>
+        <div class="code-block teal">shake(0.005, 0.25);
+flash(0xFFFFFFFF, 0.5);
+fade(0xFF000000, 0.5, false);  // false=fadeOut, true=fadeIn
+zoomCamera(1.05, 0.1);</div>
+
+        <h3>Sound</h3>
+        <div class="code-block teal">playSound('menus/confirmMenu');
+playSound('menus/scrollMenu', 0.7);
+playMusic('freakyMenu');
+stopMusic();</div>
+
+        <h3>Centering &amp; screen info</h3>
+        <div class="code-block teal">center(spr);   // both axes
+centerX(spr);  // horizontal only
+centerY(spr);  // vertical only
+
+var w = FlxG.width;
+var h = FlxG.height;</div>
+
+        <h3>Navigation</h3>
+        <div class="code-block teal">// Built-in engine states
+switchState('MainMenuState');
+switchState('FreeplayState');
+switchState('OptionsMenuState');
+switchState('TitleState');
+switchState('PlayState');
+switchState('StoryMenuState');
+
+// Custom state instances
+switchStateInstance(new funkin.scripting.ScriptableState('mystate'));
+stickerSwitch(new funkin.scripting.ScriptableState('mystate'));
+loadState(new funkin.scripting.ScriptableState('mystate'));</div>
+      </section>
+
+      <!-- SCRIPT COMMUNICATION -->
+      <section class="section" id="scripting-comms">
+        <div class="section-header">
+          <div class="section-icon">📡</div>
+          <div>
+            <div class="section-title">Script Communication</div>
+            <div class="section-sub">Shared data, broadcast, hot-reload — HScript &amp; Lua</div>
+          </div>
+        </div>
+
+        <h3>Shared data</h3>
+        <div class="code-block teal">// Script A — write
+setShared('playerName', 'Kawai');
+setShared('myCallback', function() { trace('called!'); });
+
+// Script B — read
+var name = getShared('playerName');
+var cb   = getShared('myCallback');
+if (cb != null) cb();
+
+deleteShared('playerName');</div>
+
+        <div class="code-block yellow">-- Lua: same functions available as globals
+setShared('key', value)
+local v = getShared('key')
+deleteShared('key')</div>
+
+        <h3>Broadcast</h3>
+        <div class="code-block teal">// Emit from any script
+broadcast('phase2Started', {bgColor: 0xFF0000FF});
+
+// Receive — function named after the event
+function onPhase2Started(data) {
+    trace('color: ' + data.bgColor);
+}
+
+// Or register an explicit hook
+registerHook('phase2Started', function(data) {
+    trace('received via hook');
+});</div>
+
+        <div class="code-block yellow">-- Lua
+broadcast('phase2Started')
+
+function onPhase2Started(data)
+    -- called automatically
+end</div>
+
+        <h3>Get another script</h3>
+        <div class="code-block teal">// By filename (no extension)
+var other = getScript('mySongScript');
+if (other != null) other.set('someVar', 42);
+
+// Assign and look up by tag
+setTag('myTag');
+var list = getScriptTag('myTag');  // array of scripts</div>
+
+        <h3>Execution priority</h3>
+        <div class="code-block teal">setPriority(10);   // runs before scripts at priority 0
+setPriority(-5);   // runs after
+// If two scripts cancel the same event, the higher priority one wins</div>
+
+        <h3>Hot-reload (developer mode)</h3>
+        <div class="code-block teal">hotReload();  // reload this script from disk
+// F7 reloads ALL scripts globally
+
+// Import another script as a module
+var utils = require('path/to/utils.hx');</div>
+
+        <h3>states API — navigation from scripts</h3>
+        <div class="code-block teal">// Navigate to a built-in engine state by name
+switchState('MainMenuState');
+switchState('FreeplayState');
+switchState('PlayState');
+
+// Navigate with a concrete state instance
+switchStateInstance(new funkin.scripting.ScriptableState('mystate'));
+stickerSwitch(new funkin.scripting.ScriptableState('mystate'));
+loadState(new funkin.scripting.ScriptableState('mystate'));
+
+// Sub-states
+FlxG.state.openSubState(new funkin.scripting.ScriptableState('mypopup'));
+state.closeSubState();    // close current substate
+
+// Read current state
+var cur = FlxG.state;</div>
+
+        <h3>scripts API — internal broadcast</h3>
+        <div class="code-block teal">// From HScript — call a function on all active scripts
+ScriptHandler.callOnScripts('myFunc', [arg1, arg2]);
+
+// Set a variable on all active scripts
+ScriptHandler.setOnScripts('myVar', value);
+
+// Broadcast an event to all StateScript listeners (StateScriptHandler)
+broadcast('myEvent', [arg1, arg2]);
+
+// Get another script in the same state by name or tag
+var other = getScript('otherScriptName');
+var tagged = getScriptTag('myTag');</div>
+      </section>
+
+      <!-- SHADERS -->
+      <section class="section" id="shaders">
+        <div class="section-header">
+          <div class="section-icon">✨</div>
+          <div>
+            <div class="section-title">Shaders</div>
+            <div class="section-sub">Runtime GLSL shaders — sprites, cameras, and script shaders</div>
+          </div>
+        </div>
+
+        <p>
+          Cool Engine has a unified shader system built around <code>ShaderManager</code> and
+          <code>FunkinRuntimeShader</code>. Shaders live in <code>assets/shaders/</code> or
+          <code>mods/{mod}/shaders/</code> and are picked up automatically on startup.
+        </p>
+
+        <h3>Shader file types</h3>
+        <table>
+          <thead><tr><th>File</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td><code>name.frag</code></td><td>Plain GLSL fragment shader</td></tr>
+            <tr><td><code>name.vert</code></td><td>Optional companion vertex shader (same name)</td></tr>
+            <tr><td><code>name.lua</code></td><td>Script shader — defines GLSL inline + animates uniforms</td></tr>
+            <tr><td><code>name.hx</code></td><td>Same as above but in HScript</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Using shaders from scripts</h3>
+        <div class="code-block teal">// Apply to a sprite
+ShaderManager.applyShader(bf, "wave");
+ShaderManager.applyShader(stage.background, "chromaShift");
+
+// Apply to a camera (full-screen overlay)
+ShaderManager.applyShaderToCamera("vignette");
+ShaderManager.applyShaderToCamera("vignette", FlxG.cameras.list[1]);
+
+// True post-process (reads camera pixels — shader must use #pragma header)
+ShaderManager.applyPostProcessToCamera("blur");
+
+// Update a uniform every frame
+ShaderManager.setShaderParam("wave", "uTime", elapsed);
+ShaderManager.setShaderParam("chromaShift", "uIntensity", 0.008);
+
+// Remove
+ShaderManager.removeShader(bf);
+ShaderManager.removeShaderFromCamera("vignette");</div>
+
+        <h3>Script shaders (.lua / .hx)</h3>
+        <p>
+          Put a <code>.lua</code> or <code>.hx</code> file in the shaders folder instead of a plain
+          <code>.frag</code>. The script defines the GLSL source in a <code>frag</code> variable and
+          updates uniforms in <code>onUpdate(elapsed)</code>. No separate <code>.frag</code> file needed.
+        </p>
+        <div class="code-block yellow">-- assets/shaders/wave.lua
+
+frag = [[
+  #pragma header
+  uniform float uTime;
+  uniform vec2  uResolution;
+
+  void main() {
+    vec2 uv = openfl_TextureCoordv;
+    uv.x += sin(uv.y * 20.0 + uTime * 3.0) * 0.01;
+    gl_FragColor = flixel_texture2D(bitmap, uv);
+  }
+]]
+
+local time = 0.0
+
+function onCreate()
+    setFloat2("uResolution", width, height)
+end
+
+function onUpdate(elapsed)
+    time = time + elapsed
+    setFloat("uTime", time)
+end</div>
+        <div class="code-block teal">// assets/shaders/wave.hx
+
+var frag = "
+  #pragma header
+  uniform float uTime;
+  void main() {
+    vec2 uv = openfl_TextureCoordv;
+    uv.x += sin(uv.y * 20.0 + uTime * 3.0) * 0.01;
+    gl_FragColor = flixel_texture2D(bitmap, uv);
+  }
+";
+
+var time = 0.0;
+function onUpdate(elapsed:Float) {
+    time += elapsed;
+    setFloat("uTime", time);
+}</div>
+        <p>Once defined, use it exactly like any other shader:</p>
+        <div class="code-block teal">ShaderManager.applyShader(bf, "wave");
+ShaderManager.applyShaderToCamera("wave");</div>
+
+        <h3>Script shader API</h3>
+        <table>
+          <thead><tr><th>Function</th><th>GLSL type</th></tr></thead>
+          <tbody>
+            <tr><td><code>setUniform(name, value)</code></td><td>auto-dispatch by type</td></tr>
+            <tr><td><code>setFloat(name, v)</code></td><td><code>uniform float</code></td></tr>
+            <tr><td><code>setFloat2(name, x, y)</code></td><td><code>uniform vec2</code></td></tr>
+            <tr><td><code>setFloat3(name, x, y, z)</code></td><td><code>uniform vec3</code></td></tr>
+            <tr><td><code>setFloat4(name, x, y, z, w)</code></td><td><code>uniform vec4</code></td></tr>
+            <tr><td><code>setInt(name, v)</code></td><td><code>uniform int</code></td></tr>
+            <tr><td><code>setBool(name, v)</code></td><td><code>uniform bool</code></td></tr>
+            <tr><td><code>setColor(name, 0xAARRGGBB)</code></td><td><code>uniform vec4</code> normalised</td></tr>
+            <tr><td><code>recompile()</code></td><td>recompile from current <code>frag</code>/<code>vert</code></td></tr>
+            <tr><td><code>width</code>, <code>height</code></td><td>FlxG.width / FlxG.height</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Callbacks</h3>
+        <table>
+          <thead><tr><th>Callback</th><th>When</th></tr></thead>
+          <tbody>
+            <tr><td><code>onCreate()</code></td><td>Once, after the shader compiles</td></tr>
+            <tr><td><code>onUpdate(elapsed)</code></td><td>Every frame while active</td></tr>
+            <tr><td><code>onDestroy()</code></td><td>When the shader is unloaded</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Direct FunkinRuntimeShader API</h3>
+        <p>If you import the shader class directly you get the full uniform API:</p>
+        <div class="code-block teal">import "funkin.graphics.shaders.FunkinRuntimeShader"
+
+// Create from a file
+var fx = FunkinRuntimeShader.fromFile("assets/shaders/wave.frag");
+
+// Create inline
+var fx = new FunkinRuntimeShader("
+  #pragma header
+  uniform float uTime;
+  void main() {
+    gl_FragColor = flixel_texture2D(bitmap, openfl_TextureCoordv);
+  }
+");
+
+// Apply
+bf.shader = fx;
+FlxG.camera.filters = [new openfl.filters.ShaderFilter(fx)];
+
+// Set uniforms
+fx.setFloat("uTime", elapsed);
+fx.setFloat2("uResolution", FlxG.width, FlxG.height);
+fx.setColor("uTint", FlxColor.RED);
+fx.setFloat4("uRect", 0.0, 0.0, 1.0, 1.0);
+
+// Hot-reload from disk
+fx.reload();   // re-reads the .frag file
+fx.recompile(newFragCode);</div>
+
+        <h3>Built-in engine shaders</h3>
+        <table>
+          <thead><tr><th>Shader</th><th>Applied to</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>BloomShader</code></td><td>Camera</td><td>Bloom glow effect — always on (can be disabled in options)</td></tr>
+            <tr><td><code>NoteGlowShader</code></td><td>Notes</td><td>Coloured glow on arrows, one per direction</td></tr>
+            <tr><td><code>ChromaticAberrationShader</code></td><td>Camera filter</td><td>RGB channel split</td></tr>
+            <tr><td><code>FilmGrainShader</code></td><td>Camera filter</td><td>Animated film grain</td></tr>
+            <tr><td><code>VignetteShader</code></td><td>Camera filter</td><td>Dark vignette border</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+        </div><!-- /content (scripting additions) -->
+
+    </div><!-- /content -->
+
+    <footer class="wiki-footer">
+      <span>Cool Engine v0.6.0B  ·  © Cool Engine Team</span>
+      <span>Built with HaxeFlixel + OpenFL</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(n => {
+          n.classList.toggle('active', n.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-60px 0px -40% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Smooth scroll
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(item.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+
+</body>
+</html>
