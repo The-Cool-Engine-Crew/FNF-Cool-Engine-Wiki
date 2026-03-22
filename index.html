@@ -556,6 +556,117 @@
     align-items: center;
   }
 
+
+  /* ── Language switcher ── */
+  .lang-switcher {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    margin-top: 8px;
+  }
+  .lang-btn {
+    flex: 1;
+    padding: 5px 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .lang-btn:hover  { border-color: var(--accent2); color: var(--accent2); }
+  .lang-btn.active { background: var(--accent2); border-color: var(--accent2); color: #000; font-weight: bold; }
+
+  /* ── Downloads grid ── */
+  .download-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .download-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s, transform 0.15s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .download-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .download-card:hover .dl-icon { color: var(--accent2); }
+  .dl-icon  { font-size: 26px; }
+  .dl-name  { font-weight: 700; font-size: 14px; color: var(--text); }
+  .dl-desc  { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .dl-meta  { font-family: 'Share Tech Mono', monospace; font-size: 11px;
+               color: var(--accent2); margin-top: auto; padding-top: 6px;
+               border-top: 1px solid var(--border); }
+  .dl-tag   { display: inline-block; background: var(--surface2); border: 1px solid var(--border);
+               border-radius: 4px; padding: 1px 6px; font-size: 10px; color: var(--text-dim);
+               font-family: 'Share Tech Mono', monospace; }
+
+  /* ── Mods showcase ── */
+  .mods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .mod-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
+    display: flex;
+    flex-direction: column;
+  }
+  .mod-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .mod-card-banner {
+    height: 90px;
+    background: linear-gradient(135deg, var(--surface2) 0%, #1a0a20 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .mod-card-banner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px,
+                rgba(255,60,120,0.03) 10px, rgba(255,60,120,0.03) 20px);
+  }
+  .mod-card-body  { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .mod-name       { font-weight: 700; font-size: 15px; color: var(--text); }
+  .mod-author     { font-size: 12px; color: var(--accent2); font-family: 'Share Tech Mono', monospace; }
+  .mod-desc       { font-size: 12px; color: var(--text-dim); line-height: 1.5; flex: 1; }
+  .mod-footer     { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .mod-submit-box {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.8;
+    margin-top: 24px;
+  }
+  .mod-submit-box a { color: var(--accent2); text-decoration: none; }
+  .mod-submit-box a:hover { text-decoration: underline; }
+  .mod-submit-box .submit-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+
+  /* ── i18n hidden ── */
+  [data-lang] { display: none; }
+  [data-lang].lang-active { display: revert; }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -586,6 +697,17 @@
       <div class="logo-sub">Developer Wiki</div>
       <span class="version-badge">v0.6.0B</span>
     </div>
+    <!-- Language switcher -->
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</button>
+      <button class="lang-btn"        onclick="setLang('es')" id="btn-es">ES</button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-heading">Community</div>
+      <a class="nav-item highlight" href="#downloads">Downloads</a>
+      <a class="nav-item" href="#showcase">Mod Showcase</a>
+    </div>
 
     <div class="nav-section">
       <div class="nav-heading">Overview</div>
@@ -601,6 +723,7 @@
       <a class="nav-item" href="#events">Event System</a>
       <a class="nav-item" href="#gameplay">Gameplay / PlayState</a>
       <a class="nav-item" href="#notes">Note System</a>
+      <a class="nav-item highlight" href="#note-skins">Note Skin Scripting</a>
     </div>
 
     <div class="nav-section">
@@ -674,6 +797,143 @@
     </div>
 
     <div class="content">
+
+      <!-- DOWNLOADS -->
+      <section class="section" id="downloads">
+        <div class="section-header">
+          <div class="section-icon">📦</div>
+          <div>
+            <div class="section-title" data-i18n="dl_title">Downloads</div>
+            <div class="section-sub" data-i18n="dl_sub">Engine releases, templates, tools and example mods</div>
+          </div>
+        </div>
+
+        <h3 data-i18n="dl_engine_h">Engine</h3>
+        <div class="download-grid">
+          <a class="download-card" href="https://github.com/The-Cool-Engine-Crew/FNF-Cool-Engine/releases/latest" target="_blank">
+            <div class="dl-icon">🎮</div>
+            <div class="dl-name">Cool Engine v0.6.0B</div>
+            <div class="dl-desc" data-i18n="dl_engine_desc">Latest stable release. Windows / Linux / Mac builds included.</div>
+            <div class="dl-meta">GitHub Releases ↗</div>
+          </a>
+          <a class="download-card" href="https://github.com/The-Cool-Engine-Crew/FNF-Cool-Engine" target="_blank">
+            <div class="dl-icon">📂</div>
+            <div class="dl-name" data-i18n="dl_source_name">Source Code</div>
+            <div class="dl-desc" data-i18n="dl_source_desc">Full Haxe source. Requires Haxe 4.3+, haxelib, and the dependencies listed in Project.xml.</div>
+            <div class="dl-meta">github.com ↗</div>
+          </a>
+        </div>
+
+        <h3 style="margin-top:24px" data-i18n="dl_templates_h">Templates &amp; Starters</h3>
+        <div class="download-grid">
+          <a class="download-card" href="#" target="_blank">
+            <div class="dl-icon">🗂️</div>
+            <div class="dl-name" data-i18n="dl_tpl_mod_name">Blank Mod Template</div>
+            <div class="dl-desc" data-i18n="dl_tpl_mod_desc">Empty mod folder with correct structure, a sample song, and a global script stub.</div>
+            <div class="dl-meta"><span class="dl-tag">.zip</span> &nbsp;mod template</div>
+          </a>
+          <a class="download-card" href="#" target="_blank">
+            <div class="dl-icon">📜</div>
+            <div class="dl-name" data-i18n="dl_tpl_lua_name">RuleScript Starter</div>
+            <div class="dl-desc" data-i18n="dl_tpl_lua_desc">Collection of ready-to-use .lua script examples covering all hooks, OOP access, shaders and more.</div>
+            <div class="dl-meta"><span class="dl-tag">.zip</span> &nbsp;lua examples</div>
+          </a>
+          <a class="download-card" href="#" target="_blank">
+            <div class="dl-icon">🖊️</div>
+            <div class="dl-name" data-i18n="dl_tpl_hx_name">HScript Starter</div>
+            <div class="dl-desc" data-i18n="dl_tpl_hx_desc">Same as above but in HScript (.hx). Useful for porting mods from other engines.</div>
+            <div class="dl-meta"><span class="dl-tag">.zip</span> &nbsp;hscript examples</div>
+          </a>
+          <a class="download-card" href="#" target="_blank">
+            <div class="dl-icon">✨</div>
+            <div class="dl-name" data-i18n="dl_tpl_shader_name">Shader Pack</div>
+            <div class="dl-desc" data-i18n="dl_tpl_shader_desc">10+ ready-made .lua script shaders: wave, chromatic aberration, vignette, CRT, glitch, pixelate and more.</div>
+            <div class="dl-meta"><span class="dl-tag">.zip</span> &nbsp;shaders</div>
+          </a>
+        </div>
+
+        <h3 style="margin-top:24px" data-i18n="dl_tools_h">Tools</h3>
+        <div class="download-grid">
+          <a class="download-card" href="#" target="_blank">
+            <div class="dl-icon">🎼</div>
+            <div class="dl-name" data-i18n="dl_chart_name">Chart Editor</div>
+            <div class="dl-desc" data-i18n="dl_chart_desc">Standalone chart editor with Cool Engine format support. Export to Psych, V-Slice and base game formats.</div>
+            <div class="dl-meta"><span class="dl-tag">.exe</span> &nbsp;<span class="dl-tag">web</span></div>
+          </a>
+          <a class="download-card" href="#" target="_blank">
+            <div class="dl-icon">🖼️</div>
+            <div class="dl-name" data-i18n="dl_atlas_name">Spritesheet Packer</div>
+            <div class="dl-desc" data-i18n="dl_atlas_desc">Pack individual PNG frames into a Sparrow/Packer atlas. Drag and drop, outputs XML + PNG.</div>
+            <div class="dl-meta"><span class="dl-tag">web tool</span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- MOD SHOWCASE -->
+      <section class="section" id="showcase">
+        <div class="section-header">
+          <div class="section-icon">🏆</div>
+          <div>
+            <div class="section-title" data-i18n="sc_title">Mod Showcase</div>
+            <div class="section-sub" data-i18n="sc_sub">Mods and projects built with Cool Engine</div>
+          </div>
+        </div>
+
+        <p data-i18n="sc_intro">A collection of mods made by the community using Cool Engine. Want yours listed here? See the submission info below.</p>
+<!--
+        <div class="mods-grid">
+
+          <div class="mod-card">
+            <div class="mod-card-banner">🎵</div>
+            <div class="mod-card-body">
+              <div class="mod-name">Example Mod</div>
+              <div class="mod-author">by CoolModder</div>
+              <div class="mod-desc" data-i18n="sc_example_desc">A showcase mod demonstrating advanced RuleScript features: custom shaders, scripted states, and a full week with animated cutscenes.</div>
+              <div class="mod-footer">
+                <span class="dl-tag">RuleScript</span>
+                <span class="dl-tag">Shaders</span>
+                <span class="dl-tag">Custom States</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mod-card">
+            <div class="mod-card-banner">🌊</div>
+            <div class="mod-card-body">
+              <div class="mod-name">Wave Week</div>
+              <div class="mod-author">by ShaderDev</div>
+              <div class="mod-desc" data-i18n="sc_wave_desc">Full week mod using script shaders for all backgrounds. Includes a custom Lua note type that makes notes wobble to the beat.</div>
+              <div class="mod-footer">
+                <span class="dl-tag">Script Shaders</span>
+                <span class="dl-tag">Custom Notes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mod-card">
+            <div class="mod-card-banner">🎨</div>
+            <div class="mod-card-body">
+              <div class="mod-name">Menu Overhaul</div>
+              <div class="mod-author">by UIMaker</div>
+              <div class="mod-desc" data-i18n="sc_menu_desc">Complete UI redesign using ScriptableState for all menus. Custom fonts, animated backgrounds and a settings screen built entirely in HScript.</div>
+              <div class="mod-footer">
+                <span class="dl-tag">ScriptableState</span>
+                <span class="dl-tag">HScript</span>
+              </div>
+            </div>
+          </div>
+
+        </div>-->
+
+        <div class="mod-submit-box">
+          <span class="submit-icon">📬</span>
+          <strong data-i18n="sc_submit_title">Submit your mod</strong><br>
+          <span data-i18n="sc_submit_body">Made something with Cool Engine? Open an issue or PR on the GitHub wiki repo and we'll add it here.</span><br><br>
+          <a href="https://github.com/The-Cool-Engine-Crew/FNF-Cool-Engine-Wiki/issues/new?template=mod_showcase.md" target="_blank" data-i18n="sc_submit_link">→ Submit via GitHub Issues</a>
+          &nbsp;·&nbsp;
+          <a href="https://discord.gg/your-server" target="_blank" data-i18n="sc_submit_discord">→ Post in #showcase on Discord</a>
+        </div>
+      </section>
 
       <!-- Overview -->
       <section class="section" id="overview">
@@ -1409,6 +1669,317 @@ FlxG.sound.play(Paths.sound("confirm"))   // also works</div>
 // Column → Direction mapping
 0 = Left   1 = Down   2 = Up   3 = Right</div>
       </section>
+<section class="section" id="note-skins">
+        <div class="section-header">
+          <div class="section-icon">🎨</div>
+          <div>
+            <div class="section-title">Note Skin Scripting</div>
+            <div class="section-sub">Lua · HScript · JSON — skins, splashes &amp; hold splashes</div>
+          </div>
+        </div>
+
+        <p>
+          Every note skin and splash can optionally include a script (<code>.lua</code> or <code>.hx</code>)
+          that runs alongside the skin, giving you full access to gameplay hooks, the RGB color shader,
+          tween functions, and the OOP bridge — all scoped to that skin or splash.
+        </p>
+
+        <div class="info-block">
+          <div class="info-label teal">// OVERVIEW</div>
+          Three independent script layers exist — one per visual type. Each is loaded automatically
+          when its skin becomes active. Scripts are destroyed when PlayState exits.
+        </div>
+
+        <div class="card-grid">
+          <div class="card teal">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Note Skin Script</div>
+            <div class="card-body">Runs for the active note skin. Receives <code>onNoteHit</code>, <code>onNoteMiss</code>, <code>onNoteSpawn</code> and all standard gameplay hooks.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-icon">✨</div>
+            <div class="card-title">Splash Script</div>
+            <div class="card-body">Runs for the active hit-splash skin. Receives <code>onSplashSpawn</code> — called every time a splash appears on Sick hits.</div>
+          </div>
+          <div class="card teal">
+            <div class="card-icon">💫</div>
+            <div class="card-title">Hold Splash Script</div>
+            <div class="card-body">Runs for the active hold-cover skin. Receives <code>onHoldSplashSpawn</code> — called whenever a hold-note cover starts.</div>
+          </div>
+        </div>
+
+        <!-- ─── FOLDER STRUCTURE ────────────────────────── -->
+        <h3>Folder structure</h3>
+        <p>Drop a <code>skin.lua</code> (or <code>skin.hx</code>) alongside your <code>skin.json</code>.
+        The filename can also be overridden with the <code>"script"</code> field in the JSON.</p>
+
+        <div class="code-block">assets/notes/skins/MySkin/
+  ├── skin.json        ← skin descriptor
+  ├── skin.lua         ← auto-loaded script (or skin.hx)
+  └── MySkin.png       ← atlas
+
+assets/notes/splashes/MySplash/
+  ├── splash.json
+  ├── splash.lua       ← auto-loaded splash script
+  └── MySplash.png
+
+assets/notes/skins/MySkin/  ← hold splash is part of the splash system
+  └── (hold covers are configured in splash.json → holdCover section)</div>
+
+        <div class="info-block warn">
+          <div class="info-label yellow">// CUSTOM FILENAME</div>
+          Add <code>"script": "myScript.lua"</code> inside <code>skin.json</code> or <code>splash.json</code>
+          to load a script with a different name or from a subdirectory.
+        </div>
+
+        <!-- ─── NOTE SKIN SCRIPT ───────────────────────── -->
+        <h3>Note skin script — <code>skin.lua</code></h3>
+        <p>The engine pre-injects these variables before calling <code>onCreate</code>:</p>
+
+        <table>
+          <thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>skinName</code></td><td>String</td><td>Name of the active skin (matches skin.json "name")</td></tr>
+            <tr><td><code>NoteSkinSystem</code></td><td>Class</td><td>Full static access to the skin system</td></tr>
+            <tr><td><code>NoteRGBShader</code></td><td>Class</td><td>Direct shader class for manual instantiation</td></tr>
+            <tr><td><code>applyRGBShader(spr, dir, mult)</code></td><td>Function</td><td>Apply direction-preset RGB shader to any sprite</td></tr>
+            <tr><td><code>applyRGBColor(spr, hex, mult)</code></td><td>Function</td><td>Apply hex color RGB shader</td></tr>
+            <tr><td><code>setRGBIntensity(spr, mult)</code></td><td>Function</td><td>Change intensity of existing shader</td></tr>
+            <tr><td><code>removeRGBShader(spr)</code></td><td>Function</td><td>Remove RGB shader from sprite</td></tr>
+            <tr><td><code>tweenRGBToDirection(spr, dir, dur, ease)</code></td><td>Function</td><td>Tween color → direction preset</td></tr>
+            <tr><td><code>tweenRGBToColor(spr, hex, dur, ease)</code></td><td>Function</td><td>Tween color → hex color</td></tr>
+            <tr><td><code>tweenRGBIntensity(spr, from, to, dur, ease)</code></td><td>Function</td><td>Tween shader intensity</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Note skin script — callbacks</h3>
+        <div class="code-block yellow">-- assets/notes/skins/MySkin/skin.lua
+
+function onCreate()
+    log("Skin loaded: " .. skinName)
+end
+
+-- Called when the player hits a note
+-- note   = note handle   |   rating = "sick" / "good" / "bad" / "shit"
+function onNoteHit(note, rating)
+    if rating == "sick" then
+        -- Flash the note white then tween back to its direction color
+        applyRGBColor(note, 0xFFFFFF, 1.5)
+        tweenRGBToDirection(note, getNoteDir(note), 0.2, "quadOut")
+    end
+end
+
+-- Called when the player misses a note
+-- direction = 0 (left) / 1 (down) / 2 (up) / 3 (right)
+function onNoteMiss(note, direction)
+    applyRGBColor(note, 0x444444, 0.6)   -- grey out missed note
+end
+
+-- Beat pulse: cycle direction colors across all notes
+function onBeatHit(beat)
+    forEachNote(function(n)
+        tweenRGBToDirection(n, beat % 4, 0.15, "sineOut")
+    end)
+end
+
+function onDestroy()
+    log("Skin script unloaded")
+end</div>
+
+        <!-- ─── SPLASH SCRIPT ─────────────────────────── -->
+        <h3>Splash script — <code>splash.lua</code></h3>
+        <p>Variables injected before <code>onCreate</code>: same RGB helpers as above, plus <code>splashName</code> instead of <code>skinName</code>.</p>
+
+        <div class="code-block yellow">-- assets/notes/splashes/MySplash/splash.lua
+
+function onCreate()
+    log("Splash script ready: " .. splashName)
+end
+
+-- Called every time a hit-splash appears
+-- splash    = sprite handle
+-- noteData  = 0-3 direction
+-- x, y      = spawn position
+function onSplashSpawn(splash, noteData, x, y)
+    -- Apply the standard FNF direction color via RGB shader
+    applyRGBShader(splash, noteData, 1.0)
+
+    -- Or tween it in dramatically
+    applyRGBColor(splash, 0xFFFFFF, 2.0)           -- start white
+    tweenRGBToDirection(splash, noteData, 0.1, "quadOut") -- → direction color
+end</div>
+
+        <!-- ─── HOLD SPLASH SCRIPT ────────────────────── -->
+        <h3>Hold splash (cover) script — inside <code>splash.lua</code></h3>
+        <p>Hold covers use the same splash script file. They fire a separate callback.</p>
+
+        <div class="code-block yellow">-- assets/notes/splashes/MySplash/splash.lua (continued)
+
+-- Called when a hold-note cover starts
+-- cover     = sprite handle
+-- direction = 0-3
+-- x, y      = center position of the strum
+function onHoldSplashSpawn(cover, direction, x, y)
+    applyRGBShader(cover, direction, 0.85)
+
+    -- Pulse intensity on every beat while the cover is alive
+    -- (the cover stays alive as long as the hold is held)
+    tweenRGBIntensity(cover, 1.2, 0.85, 0.25, "sineOut")
+end</div>
+
+        <!-- ─── HSCRIPT EQUIVALENT ────────────────────── -->
+        <h3>HScript equivalent</h3>
+        <p>Everything above works identically in <code>skin.hx</code> / <code>splash.hx</code>. You can also use the full OOP bridge:</p>
+
+        <div class="code-block teal">// assets/notes/skins/MySkin/skin.hx
+
+function onNoteHit(note:Dynamic, rating:String) {
+    // Direct shader access via OOP bridge
+    var s = Std.downcast(note.shader, funkin.shaders.NoteRGBShader);
+    if (s != null)
+        s.tweenToDirection(note.noteData % 4, 0.2, flixel.tweens.FlxEase.quadOut);
+}
+
+function onBeatHit(beat:Int) {
+    // Use NoteSkinSystem helpers directly
+    forEachNote(function(n) {
+        NoteSkinSystem.tweenRGBToDirection(n, beat % 4, 0.15, "sineOut");
+    });
+}</div>
+
+        <!-- ─── JSON FIELDS ───────────────────────────── -->
+        <h3>JSON fields — <code>skin.json</code></h3>
+        <p>These fields are added to the root of your <code>skin.json</code>:</p>
+
+        <table>
+          <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>"script"</code></td><td>String</td><td><code>null</code></td><td>Custom script filename. If null, <code>skin.lua</code> or <code>skin.hx</code> are auto-detected.</td></tr>
+            <tr><td><code>"colorAuto"</code></td><td>Bool</td><td><code>false</code></td><td>Apply <code>NoteRGBShader</code> automatically with standard FNF direction colors (Left=purple, Down=cyan, Up=green, Right=red). Ideal for grayscale/neutral atlases like <code>NOTE_assets.png</code>.</td></tr>
+            <tr><td><code>"colorMult"</code></td><td>Float</td><td><code>1.0</code></td><td>Shader intensity (0.0–1.0). Used with <code>colorAuto</code>.</td></tr>
+            <tr><td><code>"colorDirections"</code></td><td>Array</td><td><code>null</code></td><td>Custom 4-entry palette overriding the default presets. Each entry has <code>r</code>, <code>g</code>, <code>b</code> fields (vec3 column vectors).</td></tr>
+          </tbody>
+        </table>
+
+        <!-- ─── colorAuto ─────────────────────────────── -->
+        <h3>colorAuto — automatic RGB coloring</h3>
+        <p>
+          Inspired by Psych Engine and Nightmare Engine's RGB note coloring.
+          Uses a GLSL matrix shader that remaps the R, G, B channels of your note texture to any color
+          per direction — so a single grayscale/neutral atlas can look fully colored in-game.
+        </p>
+
+        <div class="info-block">
+          <div class="info-label teal">// HOW IT WORKS</div>
+          The shader maps: <strong>red channel</strong> → base color · <strong>green channel</strong> → shadow/outline · <strong>blue channel</strong> → highlight tint.
+          Works the same as Psych Engine's <code>noteRGB.frag</code> — fully compatible with atlases made for that engine.
+        </div>
+
+        <h4>Minimal — standard FNF colors</h4>
+        <div class="code-block yellow">{
+  "name":      "MySkin",
+  "colorAuto": true,
+  "texture":   { "path": "notes/skins/MySkin/NOTE_assets" }
+}</div>
+
+        <h4>With reduced intensity (70%)</h4>
+        <div class="code-block yellow">{
+  "name":      "MySkin",
+  "colorAuto": true,
+  "colorMult": 0.7,
+  "texture":   { "path": "notes/skins/MySkin/NOTE_assets" }
+}</div>
+
+        <h4>Custom palette (4 directions)</h4>
+        <div class="code-block yellow">{
+  "name":      "MySkin",
+  "colorAuto": true,
+  "colorDirections": [
+    { "r": [0.76, 0.11, 0.67], "g": [0, 0, 0], "b": [0.09, 0.03, 0.94] },
+    { "r": [0,    1,    1   ], "g": [0, 0, 0], "b": [0,    1,    0   ] },
+    { "r": [0.07, 0.98, 0.02], "g": [0, 0, 0], "b": [0,    0.96, 0   ] },
+    { "r": [0.98, 0.22, 0.25], "g": [0, 0, 0], "b": [0.96, 0.09, 0.12] }
+  ],
+  "texture": { "path": "notes/skins/MySkin/NOTE_assets" }
+}</div>
+
+        <h4>colorAuto also works on splashes &amp; hold covers</h4>
+        <p>Add the same fields to your <code>splash.json</code>. The shader is applied automatically on every <code>setup()</code> call for both <code>NoteSplash</code> and <code>NoteHoldCover</code>.</p>
+        <div class="code-block yellow">// splash.json
+{
+  "name":      "MySplash",
+  "colorAuto": true,
+  "colorMult": 0.9,
+  "assets":    { "path": "notes/splashes/MySplash/noteSplashes" },
+  ...
+}</div>
+
+        <!-- ─── RGB TWEEN API ─────────────────────────── -->
+        <h3>RGB shader tween API (Lua)</h3>
+        <p>These functions are available in <strong>any</strong> Lua script (song, stage, skin, splash) — not just skin scripts.</p>
+
+        <table>
+          <thead><tr><th>Function</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>applyRGBShader(spr, dir, mult)</code></td><td>Apply direction-preset shader. <code>dir</code> = 0–3.</td></tr>
+            <tr><td><code>applyRGBColor(spr, hex, mult)</code></td><td>Apply hex color as RGB shader. Converts color to preset automatically.</td></tr>
+            <tr><td><code>setRGBIntensity(spr, mult)</code></td><td>Change intensity of existing shader (0.0–1.0).</td></tr>
+            <tr><td><code>removeRGBShader(spr)</code></td><td>Remove RGB shader from sprite.</td></tr>
+            <tr><td><code>tweenRGBToDirection(spr, dir, dur, ease)</code></td><td>Smooth color tween → direction preset. Returns tween handle.</td></tr>
+            <tr><td><code>tweenRGBToColor(spr, hex, dur, ease)</code></td><td>Smooth color tween → hex color. Returns tween handle.</td></tr>
+            <tr><td><code>tweenRGBIntensity(spr, from, to, dur, ease)</code></td><td>Tween shader intensity. Great for beat pulses.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block yellow">-- Example: rainbow beat pulse on all notes (song script)
+function onBeatHit(beat)
+    forEachNote(function(note)
+        -- Tween to direction color with a quick flash
+        tweenRGBIntensity(note, 1.8, 1.0, 0.2, "quadOut")
+    end)
+end
+
+-- Example: golden flash on Sick hit
+function onNoteHit(note, rating)
+    if rating == "sick" then
+        tweenRGBToColor(note, 0xFFD700, 0.05, "linear")
+        timer(0.05, function()
+            tweenRGBToDirection(note, getNoteDir(note), 0.25, "sineOut")
+        end)
+    end
+end</div>
+
+        <!-- ─── DEFAULT DIRECTION COLORS ─────────────── -->
+        <h3>Default direction color presets</h3>
+        <table>
+          <thead><tr><th>Direction</th><th>Color</th><th>Hex</th><th>R vec3</th><th>B vec3</th></tr></thead>
+          <tbody>
+            <tr><td>0 — Left</td><td style="color:#C24B99">■ Purple</td><td><code>#C24B99</code></td><td><code>[0.76, 0.11, 0.67]</code></td><td><code>[0.09, 0.03, 0.94]</code></td></tr>
+            <tr><td>1 — Down</td><td style="color:#00FFFF">■ Cyan</td><td><code>#00FFFF</code></td><td><code>[0.0, 1.0, 1.0]</code></td><td><code>[0.0, 1.0, 0.0]</code></td></tr>
+            <tr><td>2 — Up</td><td style="color:#12FA05">■ Green</td><td><code>#12FA05</code></td><td><code>[0.07, 0.98, 0.02]</code></td><td><code>[0.0, 0.96, 0.0]</code></td></tr>
+            <tr><td>3 — Right</td><td style="color:#F9393F">■ Red</td><td><code>#F9393F</code></td><td><code>[0.98, 0.22, 0.25]</code></td><td><code>[0.96, 0.09, 0.12]</code></td></tr>
+          </tbody>
+        </table>
+
+        <!-- ─── CALLBACKS REFERENCE ───────────────────── -->
+        <h3>All available callbacks</h3>
+        <table>
+          <thead><tr><th>Callback</th><th>Script type</th><th>Arguments</th></tr></thead>
+          <tbody>
+            <tr><td><code>onCreate()</code></td><td>skin · splash</td><td>—</td></tr>
+            <tr><td><code>onNoteHit(note, rating)</code></td><td>skin</td><td>note handle, rating string</td></tr>
+            <tr><td><code>onNoteMiss(note, direction)</code></td><td>skin</td><td>note handle (may be null), direction int</td></tr>
+            <tr><td><code>onSplashSpawn(splash, noteData, x, y)</code></td><td>splash</td><td>splash handle, direction 0–3, world position</td></tr>
+            <tr><td><code>onHoldSplashSpawn(cover, direction, x, y)</code></td><td>splash</td><td>cover handle, direction 0–3, strum center</td></tr>
+            <tr><td><code>onBeatHit(beat)</code></td><td>skin · splash</td><td>beat integer</td></tr>
+            <tr><td><code>onStepHit(step)</code></td><td>skin · splash</td><td>step integer</td></tr>
+            <tr><td><code>onUpdate(elapsed)</code></td><td>skin · splash</td><td>delta time float</td></tr>
+            <tr><td><code>onDestroy()</code></td><td>skin · splash</td><td>—</td></tr>
+          </tbody>
+        </table>
+
+      </section>
+
 
 <section class="section" id="mods">
         <div class="section-header">
@@ -2759,41 +3330,83 @@ end</div>
         <div class="section-header">
           <div class="section-icon">⚙️</div>
           <div>
-            <div class="section-title">Overrides</div>
-            <div class="section-sub">Replace engine functions entirely — HScript only</div>
+            <div class="section-title">Hooking &amp; Overrides</div>
+            <div class="section-sub">before() / after() / replace() — HScript and RuleScript (Lua)</div>
           </div>
         </div>
 
-        <p>Overrides <strong>replace</strong> the engine code completely. Key difference: callbacks run <em>in addition to</em> the engine; overrides <em>replace</em> the engine logic.</p>
+        <p>
+          Cool Engine has two levels of control over engine behavior:
+          <strong>callbacks</strong> run alongside the engine, and
+          <strong>hooks</strong> let you run before, after, or instead of any method on any object.
+        </p>
 
         <div class="info-block">
-          <div class="info-label teal">// CALLBACK VS OVERRIDE</div>
-          Use <strong>callbacks</strong> when you want to add extra behavior on top of the engine's.<br>
-          Use <strong>overrides</strong> when you want to fully replace the engine's logic with your own.
+          <div class="info-label teal">// THREE LEVELS OF CONTROL</div>
+          <strong>Callbacks</strong> (onCreate, onBeatHit…) — engine fires them, you add code on top.<br>
+          <strong>before / after</strong> — wrap any method on any object, still call the original.<br>
+          <strong>replace</strong> — fully replace any method, original never runs.
         </div>
 
-        <h3>Override API</h3>
-        <div class="code-block teal">// Fully replace the player hit logic
-overrideFunction('onNoteHit', function(note, rating) {
-    // The engine NO LONGER runs its hit logic. You control everything.
-    game.gameState.score += 500;
-    trace('rating: ' + rating);
+        <h3>before() / after() / replace()</h3>
+        <p>Works in both <strong>HScript</strong> and <strong>RuleScript (Lua)</strong>. No <code>original</code> parameter — just the real arguments. The object you hook can be anything: <code>game</code>, <code>bf</code>, <code>dad</code>, a sprite, a class instance.</p>
+
+        <table>
+          <thead><tr><th>Function</th><th>When your code runs</th><th>Can cancel original?</th></tr></thead>
+          <tbody>
+            <tr><td><code>before(obj, "method", fn)</code></td><td>Before the original</td><td>Yes — <code>return false</code></td></tr>
+            <tr><td><code>after(obj, "method", fn)</code></td><td>After the original</td><td>No</td></tr>
+            <tr><td><code>replace(obj, "method", fn)</code></td><td>Instead of the original</td><td>Always (original never runs)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Lua examples</h3>
+        <div class="code-block yellow">-- Add camera shake on every beat without touching onBeatHit
+before(game, "onBeatHit", function(beat)
+    FlxG.camera:shake(0.02, 0.1)
+end)
+
+-- Run extra code after dad finishes dancing
+after(dad, "dance", function()
+    dad:playAnim("extraBob", false)
+end)
+
+-- Fully replace bf's dance
+replace(bf, "dance", function()
+    bf:playAnim("myIdle", true)
+end)
+
+-- Cancel the original based on a condition
+before(game, "onNoteHit", function(note)
+    if note.noteType == "ghost" then
+        return false   -- original hit logic is skipped
+    end
+end)</div>
+
+        <h3>HScript examples</h3>
+        <div class="code-block teal">// Add shake on every beat
+before(game, 'onBeatHit', function(beat) {
+    FlxG.camera.shake(0.02, 0.1);
 });
 
-// Restore the engine's original behavior
-removeOverride('onNoteHit');
+// Extra anim after dad dances
+after(dad, 'dance', function() {
+    dad.playAnim('extraBob', false);
+});
 
-// Temporarily disable without deleting
-toggleOverride('onNoteHit', false);
-toggleOverride('onNoteHit', true);
+// Replace bf's dance entirely
+replace(bf, 'dance', function() {
+    bf.playAnim('myIdle', true);
+});
 
-// Check if an override is currently active
-if (hasOverride('onNoteHit')) {
-    trace('override is active');
-}</div>
+// Cancel hit logic for a specific note type
+before(game, 'onNoteHit', function(note) {
+    if (note.noteType == 'ghost') return false;
+});</div>
 
         <h3>Example — fully custom scoring</h3>
-        <div class="code-block teal">overrideFunction('onNoteHit', function(note, rating) {
+        <div class="code-block teal">// HScript: replace the entire note-hit scoring
+replace(game, 'onNoteHit', function(note, rating) {
     var pts = switch(rating) {
         case 'sick':  350;
         case 'good':  200;
@@ -2801,18 +3414,49 @@ if (hasOverride('onNoteHit')) {
         default:      50;
     };
     game.gameState.score += pts;
-    // Add your own animations, sounds, etc.
+    // You control everything — play your own anims, sounds, etc.
 });
 
-// Replace the miss animation
-overrideFunction('onMiss', function(note, _) {
-    game.gameState.health -= 0.08;
+// Replace miss penalty
+replace(game, 'onMiss', function(note) {
+    game.health -= 0.08;
     bf.playAnim('hurt', true);
 });</div>
 
-        <div class="info-block warn">
-          <div class="info-label yellow">// LUA DOES NOT SUPPORT OVERRIDES</div>
-          Lua has no <code>overrideFunction</code>. To replace engine logic from Lua, use the normal callback with <code>return true</code> to cancel the engine and add your own logic before the return.
+        <div class="code-block yellow">-- Same thing in Lua
+replace(game, "onNoteHit", function(note, rating)
+    local pts = 50
+    if     rating == "sick"  then pts = 350
+    elseif rating == "good"  then pts = 200
+    elseif rating == "bad"   then pts = 100 end
+    game.gameState.score = game.gameState.score + pts
+end)
+
+replace(game, "onMiss", function(note)
+    game.health = game.health - 0.08
+    bf:playAnim("hurt", true)
+end)</div>
+
+        <h3>StateScript overrides (HScript only)</h3>
+        <p>Inside a StateScript you can also use <code>overrideFunction</code> to replace a named callback registered by the engine on that specific state. This is separate from the object-level <code>before/after/replace</code> system above.</p>
+        <div class="code-block teal">// Replace a specific engine-registered hook on this state
+overrideFunction('onNoteHit', function(note, rating) {
+    game.gameState.score += 500;
+});
+
+// Restore it
+removeOverride('onNoteHit');
+
+// Toggle without removing
+toggleOverride('onNoteHit', false);
+toggleOverride('onNoteHit', true);
+
+if (hasOverride('onNoteHit')) trace('active');</div>
+
+        <div class="info-block">
+          <div class="info-label teal">// WHICH TO USE?</div>
+          Use <code>before/after/replace</code> for hooking into any object method — works in <strong>both Lua and HScript</strong>, on anything.<br>
+          Use <code>overrideFunction</code> only for StateScript-specific named engine hooks — <strong>HScript only</strong>.
         </div>
       </section>
 
@@ -3273,6 +3917,7 @@ fx.recompile(newFragCode);</div>
         </table>
       </section>
 
+
         </div><!-- /content (scripting additions) -->
 
     </div><!-- /content -->
@@ -3284,8 +3929,11 @@ fx.recompile(newFragCode);</div>
   </main>
 </div>
 
+
+
+
+
 <script>
-  // Active nav highlight on scroll
   const sections = document.querySelectorAll('.section');
   const navItems = document.querySelectorAll('.nav-item');
 
@@ -3293,16 +3941,12 @@ fx.recompile(newFragCode);</div>
     entries.forEach(e => {
       if (e.isIntersecting) {
         const id = e.target.id;
-        navItems.forEach(n => {
-          n.classList.toggle('active', n.getAttribute('href') === '#' + id);
-        });
+        navItems.forEach(n => n.classList.toggle('active', n.getAttribute('href') === '#' + id));
       }
     });
-  }, { threshold: 0.3, rootMargin: '-60px 0px -40% 0px' });
+  }, { threshold: 0.15, rootMargin: '-60px 0px -40% 0px' });
 
   sections.forEach(s => observer.observe(s));
-
-  // Smooth scroll
   navItems.forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
@@ -3310,8 +3954,81 @@ fx.recompile(newFragCode);</div>
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
+
+  const T = {
+    en: {
+      dl_title:'Downloads', dl_sub:'Engine releases, templates, tools and example mods',
+      dl_engine_h:'Engine', dl_engine_desc:'Latest stable release. Windows, Linux and Mac builds included.',
+      dl_source_name:'Source Code', dl_source_desc:'Full Haxe source. Requires Haxe 4.3+ and haxelib.',
+      dl_templates_h:'Templates & Starters',
+      dl_tpl_mod_name:'Blank Mod Template', dl_tpl_mod_desc:'Empty mod folder with correct structure and a global script stub.',
+      dl_tpl_lua_name:'RuleScript Starter', dl_tpl_lua_desc:'Ready-to-use .lua examples: hooks, OOP, shaders and more.',
+      dl_tpl_hx_name:'HScript Starter', dl_tpl_hx_desc:'Same but in HScript (.hx). Great for porting from other engines.',
+      dl_tpl_shader_name:'Shader Pack', dl_tpl_shader_desc:'10+ script shaders: wave, chromatic aberration, vignette, CRT, glitch and more.',
+      dl_tools_h:'Tools',
+      dl_chart_name:'Chart Editor', dl_chart_desc:'Standalone editor with Cool Engine support. Export to Psych, V-Slice and base game formats.',
+      dl_atlas_name:'Spritesheet Packer', dl_atlas_desc:'Pack PNG frames into a Sparrow/Packer atlas. Outputs XML + PNG.',
+      sc_title:'Mod Showcase', sc_sub:'Mods and projects built with Cool Engine',
+      sc_intro:'A collection of community mods. Want yours listed here? See the submission info below.',
+      sc_example_desc:'Showcases advanced RuleScript: custom shaders, scripted states, and a full animated week.',
+      sc_wave_desc:'Script shaders for every background, plus a Lua note type that wobbles to the beat.',
+      sc_menu_desc:'Full UI redesign with ScriptableState menus, custom fonts and HScript settings screen.',
+      sc_submit_title:'Submit your mod',
+      sc_submit_body:"Made something with Cool Engine? Open an issue or PR on the GitHub wiki repo and we'll add it here.",
+      sc_submit_link:'Submit via GitHub Issues', sc_submit_discord:'Post in #showcase on Discord',
+    },
+    es: {
+      dl_title:'Descargas', dl_sub:'Versiones del engine, plantillas, herramientas y mods de ejemplo',
+      dl_engine_h:'Engine', dl_engine_desc:'Ultima version estable. Builds para Windows, Linux y Mac.',
+      dl_source_name:'Codigo Fuente', dl_source_desc:'Codigo Haxe completo. Requiere Haxe 4.3+ y haxelib.',
+      dl_templates_h:'Plantillas y Starters',
+      dl_tpl_mod_name:'Plantilla de Mod en Blanco', dl_tpl_mod_desc:'Carpeta de mod vacia con estructura correcta y un script global base.',
+      dl_tpl_lua_name:'Starter de RuleScript', dl_tpl_lua_desc:'Scripts .lua listos: hooks, acceso OOP, shaders y mas.',
+      dl_tpl_hx_name:'Starter de HScript', dl_tpl_hx_desc:'Igual que el anterior pero en HScript. Ideal para portar mods.',
+      dl_tpl_shader_name:'Pack de Shaders', dl_tpl_shader_desc:'Mas de 10 script shaders: wave, aberracion cromatica, vineta, CRT, glitch y mas.',
+      dl_tools_h:'Herramientas',
+      dl_chart_name:'Editor de Charts', dl_chart_desc:'Editor independiente para Cool Engine. Exporta a Psych, V-Slice y formato base.',
+      dl_atlas_name:'Empaquetador de Sprites', dl_atlas_desc:'Empaqueta frames PNG en atlas Sparrow/Packer. Genera XML + PNG.',
+      sc_title:'Mods Destacados', sc_sub:'Mods y proyectos creados con Cool Engine',
+      sc_intro:'Coleccion de mods de la comunidad. Quieres que aparezca el tuyo? Mira la info de envio abajo.',
+      sc_example_desc:'Demuestra funciones avanzadas de RuleScript: shaders, estados con script y una semana animada.',
+      sc_wave_desc:'Script shaders en todos los fondos, mas un tipo de nota Lua que oscila al ritmo.',
+      sc_menu_desc:'Rediseno completo de la UI con ScriptableState, fuentes personalizadas y opciones en HScript.',
+      sc_submit_title:'Envia tu mod',
+      sc_submit_body:'Hiciste algo con Cool Engine? Abre un issue o PR en el repositorio del wiki y lo anadiremos.',
+      sc_submit_link:'Enviar por GitHub Issues', sc_submit_discord:'Publicar en #showcase en Discord',
+    }
+  };
+
+  const NH = {
+    en: ['Overview','Core Systems','Content','Subsystems','Community','Reference','Scripting Guides'],
+    es: ['Introduccion','Sistemas Core','Contenido','Subsistemas','Comunidad','Referencia','Guias de Scripts']
+  };
+
+  let lang = localStorage.getItem('wiki-lang') || 'en';
+
+  function setLang(l) {
+    lang = l;
+    localStorage.setItem('wiki-lang', l);
+    const t = T[l];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      if (t[k] !== undefined) el.textContent = t[k];
+    });
+    document.querySelectorAll('.lang-btn').forEach(b =>
+      b.classList.toggle('active', b.id === 'btn-' + l));
+    document.querySelectorAll('.nav-heading').forEach(h => {
+      const txt = h.textContent.trim();
+      let i = NH.en.indexOf(txt);
+      if (i === -1) i = NH.es.indexOf(txt);
+      if (i !== -1 && NH[l][i]) h.textContent = NH[l][i];
+    });
+  }
+
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', () => setLang(lang));
+  else setLang(lang);
+
 </script>
-
-
 </body>
 </html>
